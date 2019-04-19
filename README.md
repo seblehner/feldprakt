@@ -23,11 +23,11 @@ conda env create -f environment.yml
 ```
 inside the
 ```sh
-/field_exercise_data_tools/
+/feldprakt/
 ```
-folder for a one-step installation of all dependencies. When installed a new environment named **fedt** is created, remember to use
+folder for a one-step installation of all dependencies. When installed a new environment named **feldprakt** is created, remember to use
 ```sh
-source activate fedt
+source activate feldprakt
 ```
 before executing any files and you are ready to go.
 
@@ -36,22 +36,22 @@ before executing any files and you are ready to go.
 
 The general structure looks like:
 ```sh
-/field_exercise_data_tools/main_control.py
+/feldprakt/main_control.py
 ```
 Control script for all working steps. If the underlying methods are only used and not modified, no other file has to be executed. The file itself is explained via comments inside.
 
 ```sh
-/field_exercise_data_tools/data/
+/feldprakt/data/
 ```
-Contains all different kinds of data, separated in subfolders. New data has to be sorted accordingly. Usually, new data consist of excel files only, hence move it to **/field_exercise_data_tools/data/excel/**.
+Contains all different kinds of data, separated in subfolders. New data has to be sorted accordingly. Usually, new data consist of excel files only, hence move it to **/feldprakt/data/excel/**.
 
 ```sh
-/field_exercise_data_tools/python/
+/feldprakt/python/
 ```
 All python files which are used via the **main_control.py** file reside in this subfolder. Only modify them, if you want to change some functionality of the toolkit.
 
 ```sh
-/field_exercise_data_tools/figures/
+/feldprakt/figures/
 ```
 Python generated plots are saved in this directory.
 
