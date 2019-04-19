@@ -32,6 +32,16 @@ source activate feldprakt
 before executing any files and you are ready to go.
 
 
+If the use of a jupyter notebook is envisaged, make sure to install jupyter:
+```sh
+conda install jupyter
+```
+and start it with (virtual environment has to be activated beforehand!):
+```sh
+jupyter-notebook
+```
+
+
 ### Structure
 
 The general structure looks like:
