@@ -4,7 +4,7 @@
 # @Author: SebiMac
 # @Date:   2019-04-05 23:19:06 +0200
 # @Last modified by:   SebiMac
-# @Last modified time: 2019-04-19 01:54:27 +0200
+# @Last modified time: 2019-04-19 03:15:31 +0200
 """
 Plotting routines for time series data from csv files.
 """
@@ -309,7 +309,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         ax1.set_title(titlestr)
         pls = p1+p2+p3+p4+p5
         labels = [pl.get_label() for pl in pls]
-        fig.legend(pls, labels, loc=[0.125, 0.467], ncol=len(labels))
+        fig.legend(pls, labels, loc=[0.125, 0.475], ncol=len(labels))
         ax1.grid(True)
         ax1.set_ylabel('temperature [°C]')
         axr1.set_ylabel('relative humidity [%]')
@@ -404,7 +404,6 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         # save figure
         print('Saving figure ...')
         plt.savefig(os.path.join(fig_dir, "".join([figurename, '.png'])))
-        plt.close()
 
 
         ## barplot height of cloud base
@@ -415,7 +414,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         cb_davisstation = (T_davisstation - TD_davisstation) * 125
 
         # plot bars
-        ax = plt.subplot(111)
+        fig, ax = plt.subplots(figsize=(12, 8))
         ax.bar(timeticks-dx/6*4, cloud_base, width=dx/3, color='y', align='center', label='observation')
         ax.bar(timeticks-dx/6*2, cb_assmann, width=dx/3, color='r', align='center', label='assmann')
         ax.bar(timeticks, cb_davis, width=dx/3, color='b', align='center', label='davis')
