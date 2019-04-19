@@ -1,0 +1,5 @@
+/data/csv/*
+/data/google_earth_kml/*
+/data/raso_text/*
+/figures/*
+*.pyc
