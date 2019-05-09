@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#
+#   
 # Python Template
 # @Author: SebiMac
 # @Date:   2019-03-21 12:54:43 +0100
@@ -30,10 +30,10 @@ workflow_dict = {'pressure_reduction':           0,
                  'excel_to_csv_syn':             0,
                  'theo_calc_single_cut':         0,
                  'theo_calc_double_cut':         0,
-                 'raso_to_kml':                  0,
+                 'raso_to_kml':                  1,
                  'theo_to_kml':                  0,
                  'timeseries_plot':              0,
-                 'timeseries_syn_plot':          1}
+                 'timeseries_syn_plot':          0}
 
 
 """ pressure reduction to mean sea level """
@@ -113,6 +113,9 @@ if workflow_dict['raso_to_kml'] == 1:
     rasokml.main(station_name='graz', hour='03', date=datestr)
     datestr = '20190216'
     rasokml.main(station_name='graz', hour='03', date=datestr)
+
+    # datestr = '20190501'
+    # rasokml.main(station_name='wien', hour='12', date=datestr)
 
 
 """ Theodolite csv to kml file """
