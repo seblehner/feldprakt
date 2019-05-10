@@ -114,6 +114,9 @@ if workflow_dict['raso_to_kml'] == 1:
     datestr = '20190216'
     rasokml.main(station_name='graz', hour='03', date=datestr)
 
+    # datestr = '20190501'
+    # rasokml.main(station_name='wien', hour='12', date=datestr)
+
 
 """ Theodolite csv to kml file """
 # use the csv file for gearth
@@ -180,7 +183,7 @@ if workflow_dict['timeseries_plot'] == 1:
 
 # timeseries plot for synoptic observations (such as cloudiness)
 if workflow_dict['timeseries_syn_plot'] == 1:
-    csv_filename = 'syn_obs_template_20190419-0142.csv'
-    figname = 'syn_obs_testplot2'
+    csv_filename = 'syn_obs_template_20190510-1153.csv'
+    figname = 'syn_obs_testplot3'
     title = 'synoptic observations 16.06.2016'
     plotrout.main(plotroutine='syn', csv_filename=csv_filename, figurename=figname, titlestr=title)
