@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#   
+#
 # Python Template
 # @Author: SebiMac
 # @Date:   2019-03-21 12:54:43 +0100
@@ -30,10 +30,10 @@ workflow_dict = {'pressure_reduction':           0,
                  'excel_to_csv_syn':             0,
                  'theo_calc_single_cut':         0,
                  'theo_calc_double_cut':         0,
-                 'raso_to_kml':                  1,
+                 'raso_to_kml':                  0,
                  'theo_to_kml':                  0,
                  'timeseries_plot':              0,
-                 'timeseries_syn_plot':          0}
+                 'timeseries_syn_plot':          1}
 
 
 """ pressure reduction to mean sea level """
@@ -183,7 +183,7 @@ if workflow_dict['timeseries_plot'] == 1:
 
 # timeseries plot for synoptic observations (such as cloudiness)
 if workflow_dict['timeseries_syn_plot'] == 1:
-    csv_filename = 'syn_obs_template_20190419-0142.csv'
-    figname = 'syn_obs_testplot2'
+    csv_filename = 'syn_obs_template_20190510-1153.csv'
+    figname = 'syn_obs_testplot3'
     title = 'synoptic observations 16.06.2016'
     plotrout.main(plotroutine='syn', csv_filename=csv_filename, figurename=figname, titlestr=title)

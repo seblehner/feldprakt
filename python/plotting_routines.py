@@ -253,6 +253,10 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         TD_davisstation = df['Td_davis-station'].values
         RH_davisstation = df['RH_davis-station'].values
 
+        # humiport
+        T_humiport = df['T_humiport'].values
+        RH_humiport = df['RH_humiport'].values
+
         # vaisala
         p_vaisala = df['p_vaisala'].values
 
@@ -269,12 +273,14 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         Cdavis = 'b'
         Ckestrel = 'g'
         Cdavisstation = 'purple'
+        Chumiport = 'orange'
 
         # define labels
         Lassmann = 'Assmann'
         Ldavis = 'Davis'
         Lkestrel = 'Kestrel'
         Ldavisstation = 'Davis-Station'
+        Lhumiport = 'Humiport'
 
         # create figure
         fig, (ax1, ax2) = plt.subplots(nrows=2, sharex=True, figsize=(12, 8))
@@ -295,6 +301,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         p2 = plot_t_td_rh(ax1, axr1, time, T_davis, TD_davis, RH_davis, label=Ldavis, color=Cdavis)
         p3 = plot_t_td_rh(ax1, axr1, time, T_kestrel, TD_kestrel, RH_kestrel, label=Lkestrel, color=Ckestrel)
         p4 = plot_t_td_rh(ax1, axr1, time, T_davisstation, TD_davisstation, RH_davisstation, label=Ldavisstation, color=Cdavisstation)
+        p5 = plot_t_td_rh(ax1, axr1, time, T_humiport, np.zeros(len(time))*np.nan, RH_humiport, label=Lhumiport, color=Chumiport)
         axr1.set_ylim([0, 100]) # set lim for relative humidity
 
         # set spine position
@@ -302,12 +309,12 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         axr11.spines['right'].set_visible(True)
 
         # plot pressure
-        p5 = axr11.plot(time, p_vaisala, '-.', label='Vaisala - pressure', color='k', linewidth=2)
+        p6 = axr11.plot(time, p_vaisala, '-.', label='Vaisala - pressure', color='k', linewidth=2)
         axr11.set_ylabel('pressure [hPa]')
 
         # set title and legend
         ax1.set_title(titlestr)
-        pls = p1+p2+p3+p4+p5
+        pls = p1+p2+p3+p4+p5+p6
         labels = [pl.get_label() for pl in pls]
         fig.legend(pls, labels, loc=[0.125, 0.475], ncol=len(labels))
         ax1.grid(True)
