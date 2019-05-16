@@ -5,8 +5,6 @@
 # @Date:   2019-03-21 12:54:43 +0100
 # @Last modified by:   SebiMac
 # @Last modified time: 2019-04-19 04:27:35 +0200
-import matplotlib
-matplotlib.use('TkAgg')
 """
 Control script for the use of field exercise data tools.
 Can be used to play around with the included test data or modified to use other data.
@@ -32,7 +30,7 @@ workflow_dict = {'pressure_reduction':           0,
                  'theo_calc_double_cut':         0,
                  'raso_to_kml':                  0,
                  'theo_to_kml':                  0,
-                 'timeseries_plot':              0,
+                 'timeseries_plot':              1,
                  'timeseries_syn_plot':          1}
 
 
@@ -96,23 +94,23 @@ if workflow_dict['theo_calc_double_cut'] == 1:
 # download radiosounding data and create a kml file for google earth
 if workflow_dict['raso_to_kml'] == 1:
     # datestr = datetime.now().strftime('%Y%m%d')
-    datestr = '20190202'
-    rasokml.main(station_name='wien', hour='00', date=datestr)
-    rasokml.main(station_name='linz', hour='03', date=datestr)
-    rasokml.main(station_name='innsbruck', hour='03', date=datestr)
-    rasokml.main(station_name='muenchen', hour='00', date=datestr)
-    rasokml.main(station_name='udine', hour='00', date=datestr)
-    rasokml.main(station_name='zagreb', hour='00', date=datestr)
-    rasokml.main(station_name='ljubljana', hour='06', date=datestr)
-    rasokml.main(station_name='graz', hour='03', date=datestr)
-    datestr = '20190203'
-    rasokml.main(station_name='graz', hour='03', date=datestr)
-    datestr = '20190207'
-    rasokml.main(station_name='graz', hour='03', date=datestr)
-    datestr = '20190209'
-    rasokml.main(station_name='graz', hour='03', date=datestr)
-    datestr = '20190216'
-    rasokml.main(station_name='graz', hour='03', date=datestr)
+    # datestr = '20190202'
+    # rasokml.main(station_name='wien', hour='00', date=datestr)
+    # rasokml.main(station_name='linz', hour='03', date=datestr)
+    # rasokml.main(station_name='innsbruck', hour='03', date=datestr)
+    # rasokml.main(station_name='muenchen', hour='00', date=datestr)
+    # rasokml.main(station_name='udine', hour='00', date=datestr)
+    # rasokml.main(station_name='zagreb', hour='00', date=datestr)
+    # rasokml.main(station_name='ljubljana', hour='06', date=datestr)
+    # rasokml.main(station_name='graz', hour='03', date=datestr)
+    # datestr = '20190203'
+    # rasokml.main(station_name='graz', hour='03', date=datestr)
+    # datestr = '20190207'
+    # rasokml.main(station_name='graz', hour='03', date=datestr)
+    # datestr = '20190209'
+    # rasokml.main(station_name='graz', hour='03', date=datestr)
+    datestr = '20190515'
+    rasokml.main(station_name='wien', hour='12', date=datestr)
 
     # datestr = '20190501'
     # rasokml.main(station_name='wien', hour='12', date=datestr)
