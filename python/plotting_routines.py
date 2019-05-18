@@ -14,6 +14,7 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
+from matplotlib.ticker import FormatStrFormatter
 import numpy as np
 import os
 import pandas as pd
@@ -168,10 +169,12 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
                         axl2.spines['left'].set_visible(True)
 
                         p6, = axl2.plot(time, y, 'b', label='pressure')
+                        axl2.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
                         set_visuals(axl2, p6, 'left')
                     else:
                         p6, = ax.plot(time, y, 'b', label='pressure')
                         ax.set_ylabel('air pressure [hPa]')
+                        ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
                         set_visuals(ax, p6, 'left')
                     pls.append(p6)
 
@@ -316,6 +319,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
 
         # plot pressure
         p6 = axr11.plot(time, p_vaisala, '-.', label='Vaisala - pressure', color='k', linewidth=2)
+        axr11.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
         axr11.set_ylabel('pressure [hPa]')
 
         # set title and legend
