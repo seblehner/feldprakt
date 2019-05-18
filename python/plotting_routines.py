@@ -337,8 +337,10 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         dx = (timeticks[1] - timeticks[0])/2
 
         # add a path patch for the cloud structure
-        def create_cloud_patch(axis, x, dx, y, calpha, ctype):
-            height_scaling = 150 # used for scaling the patch vertically
+        def create_cloud_patch(axis, x, dx, y, calpha, ctype, scaling_factor):
+            height_scaling = 150*np.ceil(scaling_factor/2.)/4. # used for scaling the patch vertically
+            dx = dx*np.ceil(scaling_factor/2.)/4.
+            x = x-dx/3
             Path = mpath.Path
             # points and type of line path
             path_data = [
@@ -367,7 +369,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
             axis.add_patch(patch)
 
             # add text about the cloud type information (can be omitted)
-            ptred = axis.text(x+dx/3, y+1400, int(ctype), FontSize=15, Color='m')
+            #ptred = axis.text(x+dx/3, y+1400, int(ctype), FontSize=15, Color='m')
             return None
 
         # plots text about the cloudiness
@@ -376,8 +378,13 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
                 cl_str = None
             else:
                 cl_str = str(int(cl))+'/8'
-            axis.text(x-dx/1.7, y+2100, cl_str, FontSize=15, Color='k')
-            axis.text(x-dx/1.3, y+200, cl_low, FontSize=15, Color='c')
+            axis.text(x-dx/1.7, -z[-1]/4., cl_str, FontSize=15, Color='k')
+            if cl_low is not None:
+                cl_low =str(int(cl_low))
+            if y > 500:
+                axis.text(x-dx/3, y-500, cl_low, FontSize=15, Color='c')
+            else:
+                axis.text(x-dx/3, y, cl_low, FontSize=15, Color='c')
             return None
 
         # plot cloudiness text
@@ -390,29 +397,29 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         # create low clouds
         for i in range(len(clouds_low)):
             if not np.isnan(clouds_low[i]):
-                create_cloud_patch(ax2, timeticks[i], dx, cloud_base[i], calpha=0.3, ctype=clouds_low[i])
+                create_cloud_patch(ax2, timeticks[i], dx, cloud_base[i], calpha=0.3, ctype=clouds_low[i], scaling_factor=cloudiness_low[i])
 
         # create medium clouds
         for i in range(len(clouds_medium)):
             if not np.isnan(clouds_medium[i]):
-                create_cloud_patch(ax2, timeticks[i], dx, 4000, calpha=0.6, ctype=clouds_medium[i])
+                create_cloud_patch(ax2, timeticks[i], dx, 4000, calpha=0.6, ctype=clouds_medium[i], scaling_factor=cloudiness[i]-cloudiness_low[i]+1)
 
         # create high clouds
         for i in range(len(clouds_high)):
             if not np.isnan(clouds_high[i]):
-                create_cloud_patch(ax2, timeticks[i], dx, 6000, calpha=0.85, ctype=clouds_high[i])
+                create_cloud_patch(ax2, timeticks[i], dx, 6000, calpha=0.85, ctype=clouds_high[i], scaling_factor=cloudiness[i]-cloudiness_low[i]+1)
 
         # create descriptive text
-        ax2.text(timeticks[0]-dx*0.8, z[-1]*1.02, 'cloud type', FontSize=8, color='m', backgroundcolor=[0.9, 0.9, 0.9])
-        ax2.text(timeticks[1], z[-1]*1.01, 'cloudiness total', FontSize=8, color='k', backgroundcolor=[0.9, 0.9, 0.9])
-        ax2.text(timeticks[3]+dx*0.1, z[-1]*1.02, 'cloudiness low', FontSize=8, color='c', backgroundcolor=[0.9, 0.9, 0.9])
+        #ax2.text(timeticks[5], z[-1]*1.02, 'cloud type', FontSize=8, color='m', backgroundcolor=[0.9, 0.9, 0.9])
+        ax2.text(timeticks[0]-dx/1.7, -z[-1]/6, 'cloudiness total', FontSize=10, color='k')
+        ax2.text(timeticks[0]+dx*0.9, z[-1]*1.02, 'cloudiness low', FontSize=8, color='c', backgroundcolor=[0.9, 0.9, 0.9])
         ax2.text(timeticks[0]-dx*0.8, z[-1]*1.15, 'T: drawn through; Td: dashed; RH: dotted', FontSize=8, color='k')
-        ax2.text(timeticks[5], z[-1]*1.02, 'visibility', FontSize=8, color='y', backgroundcolor=[0.9, 0.9, 0.9])
+        ax2.text(timeticks[0]-dx*0.8, z[-1]*1.02, 'visibility', FontSize=8, color='y', backgroundcolor=[0.9, 0.9, 0.9])
         #ax2.add_patch(mpatches.Rectangle((timeticks[0]-dx, z[-1]*0.99), dx*13, 700, FaceColor=[0.9, 0.9, 0.9], EdgeColor='k'))
 
         # set lims, labels, time axis properties
         ax2.set_ylim([0, 8001])
-        axr2.bar(time, visibility, width=0.005, fill=False, hatch='/', EdgeColor='y')
+        axr2.bar(timeticks+dx/3, visibility, width=0.005, fill=False, hatch='/', EdgeColor='y', linewidth=1.2)
         axr2.set_ylabel('horizontal visibility [km]')
         ax2.set_ylabel('height above ground [m]')
         ax2.set_xlabel('time UTC')

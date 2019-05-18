@@ -94,13 +94,23 @@ def main(conversion_type='theo_gearth', excel_file='theo_testfile_single.xlsx'):
 
         # get important data
         time = df['Datum Zeit, GMT+00:00'].values # DD.MM.YY HH:MM:SS
-        v_spd = [float(v.replace(',', '.')) for v in df['Windgeschwindigkeit, m/s'].values] # m/s
-        v_spd_boeen = [float(vb.replace(',', '.')) for vb in df['Böengeschwindigkeit, m/s'].values] # m/s
-        v_dir = [float(vd.replace(',', '.')) for vd in df['Windrichtung, ø'].values] # deg
-        T = [float(t.replace(',', '.')) for t in df['Temp., °C'].values] # deg C
-        RH = [float(rh.replace(',', '.')) for rh in df['RH, %'].values] # %
-        p = [float(pp.replace(',', '.')) for pp in df['Druck, mbar'].values] # hPa
-        sun_rad = [float(l.replace(',', '.')) for l in df['Sonnenstrahlung, W/m²'].values] # W/m2
+        # check if data from excel file uses a , or . as decimal
+        if isinstance(df['Windgeschwindigkeit, m/s'].values[0], float):
+            v_spd = [v for v in df['Windgeschwindigkeit, m/s'].values] # m/s
+            v_spd_boeen = [vb for vb in df['Böengeschwindigkeit, m/s'].values] # m/s
+            v_dir = [vd for vd in df['Windrichtung, ø'].values] # deg
+            T = [t for t in df['Temp., °C'].values] # deg C
+            RH = [rh for rh in df['RH, %'].values] # %
+            p = [pp for pp in df['Druck, mbar'].values] # hPa
+            sun_rad = [l for l in df['Sonnenstrahlung, W/m²'].values] # W/m2
+        else:
+            v_spd = [float(v.replace(',', '.')) for v in df['Windgeschwindigkeit, m/s'].values] # m/s
+            v_spd_boeen = [float(vb.replace(',', '.')) for vb in df['Böengeschwindigkeit, m/s'].values] # m/s
+            v_dir = [float(vd.replace(',', '.')) for vd in df['Windrichtung, ø'].values] # deg
+            T = [float(t.replace(',', '.')) for t in df['Temp., °C'].values] # deg C
+            RH = [float(rh.replace(',', '.')) for rh in df['RH, %'].values] # %
+            p = [float(pp.replace(',', '.')) for pp in df['Druck, mbar'].values] # hPa
+            sun_rad = [float(l.replace(',', '.')) for l in df['Sonnenstrahlung, W/m²'].values] # W/m2
 
         # create new pandas dataframe
         df_new = pd.DataFrame(np.column_stack([time, v_spd, v_spd_boeen, v_dir, T, RH, p, sun_rad]),
