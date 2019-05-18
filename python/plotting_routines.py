@@ -316,7 +316,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         ax1.set_title(titlestr)
         pls = p1+p2+p3+p4+p5+p6
         labels = [pl.get_label() for pl in pls]
-        fig.legend(pls, labels, loc=[0.125, 0.475], ncol=len(labels))
+        fig.legend(pls, labels, loc=[0.125, 0.483], ncol=len(labels), prop={'size': 8})
         ax1.grid(True)
         ax1.set_ylabel('temperature [°C]')
         axr1.set_ylabel('relative humidity [%]')
@@ -366,7 +366,11 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
 
         # plots text about the cloudiness
         def plot_cloudiness(axis, x, dx, y, cl, cl_low):
-            axis.text(x-dx/1.7, y+2100, str(int(cl))+'/8', FontSize=15, Color='k')
+            if np.isnan(cl):
+                cl_str = None
+            else:
+                cl_str = str(int(cl))+'/8'
+            axis.text(x-dx/1.7, y+2100, cl_str, FontSize=15, Color='k')
             axis.text(x-dx/1.3, y+200, cl_low, FontSize=15, Color='c')
             return None
 
@@ -393,12 +397,12 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
                 create_cloud_patch(ax2, timeticks[i], dx, 6000, calpha=0.85, ctype=clouds_high[i])
 
         # create descriptive text
-        ax2.text(timeticks[0]-dx*0.8, z[-1]*0.95, 'cloud type', FontSize=10, color='m')
-        ax2.text(timeticks[1], z[-1]*0.95, 'cloudiness total', FontSize=10, color='k')
-        ax2.text(timeticks[3]+dx*0.1, z[-1]*0.95, 'cloudiness low', FontSize=10, color='c')
-        ax2.text(timeticks[0]-dx*0.8, z[-1]*1.13, 'T: drawn through; Td: dashed; RH: dotted', FontSize=10, color='k')
-        ax2.text(timeticks[5], z[-1]*0.95, 'visibility', FontSize=10, color='y')
-        ax2.add_patch(mpatches.Rectangle((timeticks[0]-dx, z[-1]*0.94), dx*13, 700, FaceColor=[0.9, 0.9, 0.9], EdgeColor='k'))
+        ax2.text(timeticks[0]-dx*0.8, z[-1]*1.02, 'cloud type', FontSize=8, color='m', backgroundcolor=[0.9, 0.9, 0.9])
+        ax2.text(timeticks[1], z[-1]*1.01, 'cloudiness total', FontSize=8, color='k', backgroundcolor=[0.9, 0.9, 0.9])
+        ax2.text(timeticks[3]+dx*0.1, z[-1]*1.02, 'cloudiness low', FontSize=8, color='c', backgroundcolor=[0.9, 0.9, 0.9])
+        ax2.text(timeticks[0]-dx*0.8, z[-1]*1.15, 'T: drawn through; Td: dashed; RH: dotted', FontSize=8, color='k')
+        ax2.text(timeticks[5], z[-1]*1.02, 'visibility', FontSize=8, color='y', backgroundcolor=[0.9, 0.9, 0.9])
+        #ax2.add_patch(mpatches.Rectangle((timeticks[0]-dx, z[-1]*0.99), dx*13, 700, FaceColor=[0.9, 0.9, 0.9], EdgeColor='k'))
 
         # set lims, labels, time axis properties
         ax2.set_ylim([0, 8001])
