@@ -62,7 +62,10 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         # read into dataframe from csv file
         df = pd.read_csv(os.path.join('data', 'csv', csv_filename), index_col=0, sep=',')
         timestr = df['time']
-        time = [datetime.strptime(tt, '%d.%m.%y %H:%M:%S') for tt in timestr]
+        if len(timestr[0]) > 18:
+            time = [datetime.strptime(tt, '%d.%m.%Y %H:%M:%S') for tt in timestr]
+        else:
+            time = [datetime.strptime(tt, '%d.%m.%y %H:%M:%S') for tt in timestr]
 
         # create figure
         fig, ax = plt.subplots(figsize=(12, 6))
@@ -133,6 +136,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
 
                                 p5, = axr3.plot(time, y, 'g', label='relative humidity')
                                 axr3.set_ylabel('relative humidity [%]')
+                                axr3.set_ylim([35, 100])
                                 set_visuals(axr3, p5, 'right')
                         except:
                             axr2 = ax.twinx()
@@ -141,10 +145,12 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
 
                             p5, = axr2.plot(time, y, 'g', label='relative humidity')
                             axr2.set_ylabel('relative humidity [%]')
+                            axr2.set_ylim([35, 100])
                             set_visuals(axr2, p5, 'right')
                     else:
                         p5, = axr1.plot(time, y, 'g', label='relative humidity')
                         axr1.set_ylabel('relative humidity [%]')
+                        axr1.set_ylim([35, 100])
                         set_visuals(axr1, p5, 'right')
                     pls.append(p5)
 
@@ -302,7 +308,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         p3 = plot_t_td_rh(ax1, axr1, time, T_kestrel, TD_kestrel, RH_kestrel, label=Lkestrel, color=Ckestrel)
         p4 = plot_t_td_rh(ax1, axr1, time, T_davisstation, TD_davisstation, RH_davisstation, label=Ldavisstation, color=Cdavisstation)
         p5 = plot_t_td_rh(ax1, axr1, time, T_humiport, np.zeros(len(time))*np.nan, RH_humiport, label=Lhumiport, color=Chumiport)
-        axr1.set_ylim([0, 100]) # set lim for relative humidity
+        axr1.set_ylim([35, 100]) # set lim for relative humidity
 
         # set spine position
         axr11.spines['right'].set_position(('axes', 1.1))

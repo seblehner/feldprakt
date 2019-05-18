@@ -30,7 +30,7 @@ workflow_dict = {'pressure_reduction':           0,
                  'theo_calc_double_cut':         0,
                  'raso_to_kml':                  0,
                  'theo_to_kml':                  0,
-                 'timeseries_plot':              0,
+                 'timeseries_plot':              1,
                  'timeseries_syn_plot':          1}
 
 
