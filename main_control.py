@@ -34,7 +34,7 @@ workflow_dict = {'pressure_reduction':           0,
                  'timeseries_plot':              0,
                  'timeseries_compare_plot':      0,
                  'timeseries_syn_plot':          0,
-                 'timeseries_syn_forecast_plot': 0}
+                 'timeseries_syn_forecast_plot': 1}
 
 
 """ pressure reduction to mean sea level """
@@ -55,7 +55,7 @@ if workflow_dict['excel_to_csv_theo_gearth'] == 1:
 
 # theodolite for single/double cut calculations
 if workflow_dict['excel_to_csv_theo_cut'] == 1:
-    excel_filename1 = 'theo_test_fix.xlsx'
+    excel_filename1 = 'theo_190519135628.xlsx'
     etcsv.main(conversion_type='theo_cut', excel_file=excel_filename1)
     # excel_filename1 = 'theo_testfile_double1.xlsx'
     # etcsv.main(conversion_type='theo_cut', excel_file=excel_filename1)
@@ -79,7 +79,7 @@ if workflow_dict['excel_to_csv_syn'] == 1:
 
 # synoptic forecast
 if workflow_dict['excel_to_csv_syn_forecast'] == 1:
-    excel_filename = 'syn_forecast_template.xlsx'
+    excel_filename = 'syn_forecast_template_test1.xlsx'
     etcsv.main(conversion_type='syn', excel_file=excel_filename)
 
 """ Theodolite cuts calculations """
@@ -87,8 +87,7 @@ if workflow_dict['excel_to_csv_syn_forecast'] == 1:
 if workflow_dict['theo_calc_single_cut'] == 1:
     # input vars
     h = 785
-    csv_file = 'theo_test_fix_cut_20190519-1241.csv'
-
+    csv_file = 'theo_190519135628_cut_20190519-1502.csv'
     thsin.main(station_height=h, csv_file=csv_file)
 
 # theodolite double cut
@@ -134,7 +133,8 @@ if workflow_dict['theo_to_kml'] == 1:
     h = 785
     lon = 15.3175
     lat = 47.5553
-    name = 'theo_test_fix_gearth_20190519-1241.csv'
+    #name = 'theo_190519135628_gearth_20190519-1502.csv'
+    name = 'theo_test_fix_gearth_20190519-1558.csv'
     theokml.main(stat_height=h, stat_lon=lon, stat_lat=lat, csv_file=name)
 
 
@@ -217,7 +217,7 @@ if workflow_dict['timeseries_syn_plot'] == 1:
 
 # timeseries plot for synoptic forecast
 if workflow_dict['timeseries_syn_forecast_plot'] == 1:
-    csv_filename = 'syn_forecast_template_20190519-1441.csv'
+    csv_filename = 'syn_forecast_template_20190519-1423.csv'
     figname = 'syn_forecast_20190519_15UTC'
     title = 'synoptic forecast 19.05.2019 15 UTC'
     plotrout.main(plotroutine='syn_forecast', csv_filename=csv_filename, figurename=figname, titlestr=title)
