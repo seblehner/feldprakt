@@ -134,9 +134,11 @@ def main(stat_height=None, stat_lon=None, stat_lat=None, csv_file=None):
 
     ## calculate new lons, lats
     print('Calculate trajectory ...')
-    # transform degrees to radians and flip by pi
+    # transform degrees to radians and flip by pi (because wind vector degree show from where the wind is coming)
     translate_direction = data_arr[:,1]
     td_rad = translate_direction*np.pi/180 - np.pi
+    # transform geographical to meteo degrees
+    td_rad = (450 - td_rad) % 360
 
     # calculate velocity in x, y direction
     translate_velo = data_arr[:,2]
@@ -149,9 +151,6 @@ def main(stat_height=None, stat_lon=None, stat_lat=None, csv_file=None):
 
     earth_radius = 6371e3 # in m
     earth_u = 2*earth_radius*np.pi
-    # convert math/meteo deg
-    td_rad = (450 - td_rad) % 360
-
 
     # source: http://www.geomidpoint.com/destination/calculation.html
     # distance covered in radians
