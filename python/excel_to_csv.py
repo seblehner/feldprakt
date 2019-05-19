@@ -55,8 +55,7 @@ def main(conversion_type='theo_gearth', excel_file='theo_testfile_single.xlsx'):
         height = df['Height(m) for graph'].values
 
         # convert math deg to meteo deg
-        # FIRST NUMBER "360" NEEDS TO BE VERIFIED
-        v_dir = (360 - v_dir) % 360
+        v_dir = (450 - v_dir) % 360
 
         # create new pandas dataframe
         df_new = pd.DataFrame(np.column_stack([height, v_dir, v_spd]),
