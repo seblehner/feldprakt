@@ -101,7 +101,9 @@ def main(conversion_type='theo_gearth', excel_file='theo_testfile_single.xlsx'):
             T = [t for t in df['Temp., °C'].values] # deg C
             RH = [rh for rh in df['RH, %'].values] # %
             p = [pp for pp in df['Druck, mbar'].values] # hPa
-            sun_rad = [l for l in df['Sonnenstrahlung, W/m²'].values] # W/m2
+            print(df['Sonnenstrahlung, W/m²'])
+            print(df['Sonnenstrahlung, W/m²'].values)
+            #sun_rad = [l for l in df['Sonnenstrahlung, W/m²'].values] # W/m2
         else:
             v_spd = [float(v.replace(',', '.')) for v in df['Windgeschwindigkeit, m/s'].values] # m/s
             v_spd_boeen = [float(vb.replace(',', '.')) for vb in df['Böengeschwindigkeit, m/s'].values] # m/s
@@ -126,7 +128,7 @@ def main(conversion_type='theo_gearth', excel_file='theo_testfile_single.xlsx'):
         # read excel file with pandas
         print('Read excel file ...')
         df = pd.read_excel(os.path.join('data', 'excel', excel_file))
-        
+
         # save dateframe as csv file
         print('Saving data to csv file ...')
         csv_filename = "".join([excel_file.split('.')[0], '_', datestr, '.csv'])

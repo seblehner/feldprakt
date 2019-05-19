@@ -342,9 +342,9 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
 
         # add a path patch for the cloud structure
         def create_cloud_patch(axis, x, dx, y, calpha, ctype, scaling_factor):
-            height_scaling = 150*np.ceil(scaling_factor/2.)/4. # used for scaling the patch vertically
-            dx = dx*np.ceil(scaling_factor/2.)/4.
-            x = x-dx/3
+            x = x-dx/3.
+            height_scaling = 150*0.3 + 150*0.7*scaling_factor/8. # used for scaling the patch vertically
+            dx = dx*0.3 + dx*0.7*scaling_factor/8.
             Path = mpath.Path
             # points and type of line path
             path_data = [
@@ -385,11 +385,13 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
             axis.text(x-dx/1.7, -z[-1]/4., cl_str, FontSize=15, Color='k')
 
             if np.isnan(cl_low):
-                cl_low_str = None
-            if y > 500:
-                axis.text(x-dx/3, y-500, cl_low_str, FontSize=15, Color='c')
+                cl_low = None
             else:
-                axis.text(x-dx/3, y, cl_low_str, FontSize=15, Color='c')
+                cl_low = str(int(cl_low))
+            if y > 500:
+                axis.text(x-dx/3, y-500, cl_low, FontSize=15, Color='c')
+            else:
+                axis.text(x-dx/3, y, cl_low, FontSize=15, Color='c')
             return None
 
         # plot cloudiness text
@@ -407,25 +409,34 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         # create medium clouds
         for i in range(len(clouds_medium)):
             if not np.isnan(clouds_medium[i]):
-                create_cloud_patch(ax2, timeticks[i], dx, 4000, calpha=0.6, ctype=clouds_medium[i], scaling_factor=cloudiness[i]-cloudiness_low[i]+1)
+                if np.isnan(cloudiness_low[i]):
+                    scaling_low = 0
+                else:
+                    scaling_low = cloudiness_low[i]
+                create_cloud_patch(ax2, timeticks[i], dx, 4000, calpha=0.6, ctype=clouds_medium[i], scaling_factor=cloudiness[i]-scaling_low)
 
         # create high clouds
         for i in range(len(clouds_high)):
             if not np.isnan(clouds_high[i]):
-                create_cloud_patch(ax2, timeticks[i], dx, 6000, calpha=0.85, ctype=clouds_high[i], scaling_factor=cloudiness[i]-cloudiness_low[i]+1)
+                if np.isnan(cloudiness_low[i]):
+                    scaling_low = 0
+                else:
+                    scaling_low = cloudiness_low[i]
+                create_cloud_patch(ax2, timeticks[i], dx, 6000, calpha=0.85, ctype=clouds_high[i], scaling_factor=cloudiness[i]-scaling_low)
 
         # create descriptive text
         #ax2.text(timeticks[5], z[-1]*1.02, 'cloud type', FontSize=8, color='m', backgroundcolor=[0.9, 0.9, 0.9])
         ax2.text(timeticks[0]-dx/1.7, -z[-1]/6, 'cloudiness total', FontSize=10, color='k')
-        ax2.text(timeticks[0]+dx*0.9, z[-1]*1.02, 'cloudiness low', FontSize=8, color='c', backgroundcolor=[0.9, 0.9, 0.9])
+        ax2.text(timeticks[0]-dx*0.8, z[-1]*1.02, 'cloudiness low', FontSize=8, color='c', backgroundcolor=[0.9, 0.9, 0.9])
         ax2.text(timeticks[0]-dx*0.8, z[-1]*1.15, 'T: drawn through; Td: dashed; RH: dotted', FontSize=8, color='k')
-        ax2.text(timeticks[0]-dx*0.8, z[-1]*1.02, 'visibility', FontSize=8, color='y', backgroundcolor=[0.9, 0.9, 0.9])
+        #ax2.text(timeticks[0]+dx*0.9, z[-1]*1.02, 'visibility', FontSize=8, color='y', backgroundcolor=[0.9, 0.9, 0.9])
         #ax2.add_patch(mpatches.Rectangle((timeticks[0]-dx, z[-1]*0.99), dx*13, 700, FaceColor=[0.9, 0.9, 0.9], EdgeColor='k'))
 
         # set lims, labels, time axis properties
         ax2.set_ylim([0, 8001])
         axr2.bar(timeticks+dx/3, visibility, width=0.005, fill=False, hatch='/', EdgeColor='y', linewidth=1.2)
-        axr2.set_ylabel('horizontal visibility [km]')
+        axr2.set_ylabel('horizontal visibility [km]', color='y')
+        axr2.tick_params(axis='y', colors='y')
         ax2.set_ylabel('height above ground [m]')
         ax2.set_xlabel('time UTC')
         set_time_axis(ax2, time, withDate=False)
