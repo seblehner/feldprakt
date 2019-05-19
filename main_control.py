@@ -66,7 +66,7 @@ if workflow_dict['excel_to_csv_hobo'] == 1:
 
 # synoptic observations
 if workflow_dict['excel_to_csv_syn'] == 1:
-    excel_filename = 'syn_obs_template_20190518_2.xlsx'
+    excel_filename = 'syn_obs_gruppe1_tag2.xlsx'
     etcsv.main(conversion_type='syn', excel_file=excel_filename)
 
 
@@ -181,7 +181,7 @@ if workflow_dict['timeseries_plot'] == 1:
 
 # timeseries plot for synoptic observations (such as cloudiness)
 if workflow_dict['timeseries_syn_plot'] == 1:
-    csv_filename = 'syn_obs_template_20190518_2_20190518-1637.csv'
-    figname = 'syn_obs_20190518_15UTC'
-    title = 'synoptic observations 18.05.2019'
+    csv_filename = 'syn_obs_gruppe1_tag2_20190519-0631.csv'
+    figname = 'syn_obs_20190518_15UTCasdasd'
+    title = 'synoptic observations 19.05.2019'
     plotrout.main(plotroutine='syn', csv_filename=csv_filename, figurename=figname, titlestr=title)

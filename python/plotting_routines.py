@@ -383,12 +383,13 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
             else:
                 cl_str = str(int(cl))+'/8'
             axis.text(x-dx/1.7, -z[-1]/4., cl_str, FontSize=15, Color='k')
-            if cl_low is not None:
-                cl_low =str(int(cl_low))
+
+            if np.isnan(cl_low):
+                cl_low_str = None
             if y > 500:
-                axis.text(x-dx/3, y-500, cl_low, FontSize=15, Color='c')
+                axis.text(x-dx/3, y-500, cl_low_str, FontSize=15, Color='c')
             else:
-                axis.text(x-dx/3, y, cl_low, FontSize=15, Color='c')
+                axis.text(x-dx/3, y, cl_low_str, FontSize=15, Color='c')
             return None
 
         # plot cloudiness text
@@ -396,7 +397,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
             if not (np.isnan(cloud_base[i]) or cloud_base[i]>4000):
                 plot_cloudiness(ax2, timeticks[i], dx, cloud_base[i], cloudiness[i], cloudiness_low[i])
             else:
-                plot_cloudiness(ax2, timeticks[i], dx, -2000, cloudiness[i], None)
+                plot_cloudiness(ax2, timeticks[i], dx, -2000, cloudiness[i], np.nan)
 
         # create low clouds
         for i in range(len(clouds_low)):

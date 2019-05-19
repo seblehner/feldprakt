@@ -126,7 +126,7 @@ def main(conversion_type='theo_gearth', excel_file='theo_testfile_single.xlsx'):
         # read excel file with pandas
         print('Read excel file ...')
         df = pd.read_excel(os.path.join('data', 'excel', excel_file))
-
+        
         # save dateframe as csv file
         print('Saving data to csv file ...')
         csv_filename = "".join([excel_file.split('.')[0], '_', datestr, '.csv'])
