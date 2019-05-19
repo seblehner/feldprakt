@@ -26,12 +26,15 @@ workflow_dict = {'pressure_reduction':           0,
                  'excel_to_csv_theo_cut':        0,
                  'excel_to_csv_hobo':            0,
                  'excel_to_csv_syn':             0,
+                 'excel_to_csv_syn_forecast':    1,
                  'theo_calc_single_cut':         0,
                  'theo_calc_double_cut':         0,
                  'raso_to_kml':                  0,
                  'theo_to_kml':                  0,
                  'timeseries_plot':              0,
-                 'timeseries_syn_plot':          1}
+                 'timeseries_compare_plot':      0,
+                 'timeseries_syn_plot':          0,
+                 'timeseries_syn_forecast_plot': 0}
 
 
 """ pressure reduction to mean sea level """
@@ -62,6 +65,11 @@ if workflow_dict['excel_to_csv_theo_cut'] == 1:
 # hobo weather station (XLS file)
 if workflow_dict['excel_to_csv_hobo'] == 1:
     excel_filename = 'hobo_testfile.xls'
+    # excel_filename = 'unterderlanzen20190518.xls'
+    # excel_filename = 'Stübming20190518.xls'
+    # excel_filename = 'Seetal20190518.xls'
+    # excel_filename = 'Lanzen_20190518.xls'
+    # excel_filename = 'hobo_Campingplatz20190518.xls'
     etcsv.main(conversion_type='hobo', excel_file=excel_filename)
 
 # synoptic observations
@@ -69,6 +77,10 @@ if workflow_dict['excel_to_csv_syn'] == 1:
     excel_filename = 'syn_obs_gruppe1_tag2.xlsx'
     etcsv.main(conversion_type='syn', excel_file=excel_filename)
 
+# synoptic forecast
+if workflow_dict['excel_to_csv_syn_forecast'] == 1:
+    excel_filename = 'syn_forecast_template.xlsx'
+    etcsv.main(conversion_type='syn', excel_file=excel_filename)
 
 """ Theodolite cuts calculations """
 # theodolite single cut
@@ -179,9 +191,33 @@ if workflow_dict['timeseries_plot'] == 1:
     plotrout.main(plotroutine='hobo', csv_filename=csv_filename, var_dict=var_dict, figurename=figname)
 
 
+# compare multiple time series of the same parameter
+if workflow_dict['timeseries_compare_plot'] == 1:
+    # csv dict: first entry: name; second entry: filename
+    csv_filenames = {'Campingplatz': 'hobo_Campingplatz20190518_20190519-0924.csv',
+                     'Lanzen': 'Lanzen_20190518_20190519-0905.csv',
+                     'Seetal': 'Seetal20190518_20190519-0904.csv',
+                     'Stübming': 'Stübming20190518_20190519-0904.csv',
+                     'UnterDerLanzen': 'unterderlanzen20190518_20190519-0902.csv'}
+    # if wind gusts and/or pressure is plotted
+    flag = {'wind_gusts': 0,
+            'pressure':   0}
+    figname = 'hobo_compare_'
+    plotrout.main(plotroutine='hobo_multi', csv_filename=csv_filenames, figurename=figname, flag=flag)
+
+
+
 # timeseries plot for synoptic observations (such as cloudiness)
 if workflow_dict['timeseries_syn_plot'] == 1:
     csv_filename = 'syn_obs_gruppe1_tag2_20190519-0631.csv'
-    figname = 'syn_obs_20190518_15UTCasdasd'
+    figname = 'syn_obs_20190518_15UTC'
     title = 'synoptic observations 19.05.2019'
     plotrout.main(plotroutine='syn', csv_filename=csv_filename, figurename=figname, titlestr=title)
+
+
+# timeseries plot for synoptic forecast
+if workflow_dict['timeseries_syn_forecast_plot'] == 1:
+    csv_filename = 'syn_forecast_template_20190519-0631.csv'
+    figname = 'syn_obs_20190518_15UT'
+    title = 'synoptic observations 19.05.2019'
+    plotrout.main(plotroutine='syn_forecast', csv_filename=csv_filename, figurename=figname, titlestr=title)

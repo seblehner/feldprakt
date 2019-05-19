@@ -21,7 +21,7 @@ import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 import sys
 
-def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, titlestr=None):
+def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, titlestr=None, flag=None):
     # define some methods
     register_matplotlib_converters()
     def set_visuals(ax, pl, spine_location):
@@ -46,6 +46,16 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
             dt2 = (time[1]-time[0])/2
             ax.set_xlim([time[0]-dt2, time[-1]+dt2])
             h_fmt = mdates.DateFormatter('%H')
+        ax.xaxis.set_major_locator(hours)
+        ax.xaxis.set_major_formatter(h_fmt)
+        return None
+
+    def set_time_axis_compare(ax, time):
+        ax.set_xlabel('time UTC')
+        hours = mdates.HourLocator(interval=1)
+        ax.set_xlim([time[0], time[-1]])
+        h_fmt = mdates.DateFormatter('%d.%m.%y - %H:%M')
+        fig.autofmt_xdate(rotation=45)
         ax.xaxis.set_major_locator(hours)
         ax.xaxis.set_major_formatter(h_fmt)
         return None
@@ -225,6 +235,132 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         # save figure
         print('Saving figure ...')
         plt.savefig(os.path.join(fig_dir, figurename))
+
+    if plotroutine == 'hobo_multi':
+        # read into dataframe from csv file
+        id = []
+        dflist = []
+        for index, item in enumerate(csv_filename.items()):
+            #print(item[1])
+            id.append(item[0])
+            dflist.append(pd.read_csv(os.path.join('data', 'csv', item[1]), index_col=0, sep=','))
+
+        def get_time_vec(df):
+            timestr = df['time']
+            if len(timestr[0]) > 18:
+                time = [datetime.strptime(tt, '%d.%m.%Y %H:%M:%S') for tt in timestr]
+            else:
+                time = [datetime.strptime(tt, '%d.%m.%y %H:%M:%S') for tt in timestr]
+            return time
+
+        # create figure
+        # 1) wind gusts, wind speed, wind direction comparison
+        for i, flags in enumerate(flag.items()):
+            if flags[0] == 'wind_gusts':
+                if flags[1]:
+                    fig, (ax, ax2, ax3) = plt.subplots(nrows=3, sharex=True, figsize=(14, 9))
+                    switch = 1
+                else:
+                    fig, (ax, ax2) = plt.subplots(nrows=2, sharex=True, figsize=(12, 7))
+                    switch = 0
+
+        pls = []
+        colrs = ['b', 'g', 'r', 'orange', 'magenta', 'cyan']
+        for ind, df in enumerate(dflist):
+            colr = colrs[ind]
+            lab = id[ind]
+            time = get_time_vec(df)
+            y = df['wind speed [m/s]']
+            p, = ax.plot(time, y, color=colr, label=lab)
+            ax.set_ylabel('wind speed [m/s]')
+            pls.append(p)
+
+
+            if switch == 1:
+                y = df['wind gusts [m/s]']
+                ax3.plot(time, y, '--', color=colr)
+                ax3.set_ylabel('wind gusts [m/s]')
+
+            y = df['wind direction [deg]']
+            ax2.plot(time, y, '*', color=colr)
+            ax2.set_ylabel('wind direction [°]')
+            ax2.set_ylim([0, 360])
+            ax2.set_yticks(np.arange(0,361,45))
+            ax2.set_yticklabels(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'])
+
+        # set title
+        if not titlestr:
+            ax.set_title("".join(['HOBO time series from ', time[0].strftime('%d.%m.%Y - %H:%M'), ' to ', time[-1].strftime('%d.%m.%Y - %H:%M')]))
+        else:
+            ax.set_title(titlestr)
+
+        # set time/x-axis and legend
+        set_time_axis_compare(ax, time)
+        labels = [pl.get_label() for pl in pls]
+        fig.legend(pls, labels, loc='upper center', ncol=len(labels))
+        ax.grid(True)
+
+        # save figure
+        print('Saving figure ...')
+        if switch == 1:
+            savename = 'wind_speed_direction_gusts.png'
+        else:
+            savename = 'wind_speed_direction.png'
+        plt.savefig(os.path.join(fig_dir, "".join([figurename, savename])))
+
+
+        # create figure
+        # 1) wind gusts, wind speed, wind direction comparison
+        for i, flags in enumerate(flag.items()):
+            if flags[0] == 'pressure':
+                if flags[1]:
+                    fig, (ax, ax2, ax3) = plt.subplots(nrows=3, sharex=True, figsize=(14, 9))
+                    switch = 1
+                else:
+                    fig, (ax, ax2) = plt.subplots(nrows=2, sharex=True, figsize=(12, 7))
+                    switch = 0
+
+        pls = []
+        colrs = ['b', 'g', 'r', 'orange', 'magenta', 'cyan']
+        for ind, df in enumerate(dflist):
+            colr = colrs[ind]
+            lab = id[ind]
+            time = get_time_vec(df)
+            y = df['temperature [deg C]']
+            p, = ax.plot(time, y, color=colr, label=lab)
+            ax.set_ylabel('temperature [°C]')
+            pls.append(p)
+
+            y = df['relative humidity [%]']
+            ax2.plot(time, y, '--', color=colr)
+            ax2.set_ylabel('relative humidity [%]')
+            ax2.set_ylim([35, 100])
+
+            if switch == 1:
+                y = df['pressure [hPa]']
+                ax3.plot(time, y, '-.', color=colr)
+                ax3.set_ylabel('pressure [hPa]')
+
+        # set title
+        if not titlestr:
+            ax.set_title("".join(['HOBO time series from ', time[0].strftime('%d.%m.%Y - %H:%M'), ' to ', time[-1].strftime('%d.%m.%Y - %H:%M')]))
+        else:
+            ax.set_title(titlestr)
+
+        # set time/x-axis and legend
+        set_time_axis_compare(ax, time)
+        labels = [pl.get_label() for pl in pls]
+        fig.legend(pls, labels, loc='upper center', ncol=len(labels))
+        ax.grid(True)
+
+        # save figure
+        print('Saving figure ...')
+        if switch == 1:
+            savename = 'temp_rh_pressure.png'
+        else:
+            savename = 'temp_rh.png'
+        plt.savefig(os.path.join(fig_dir, "".join([figurename, savename])))
+
 
 
     # synoptic observations

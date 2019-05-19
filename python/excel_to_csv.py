@@ -91,8 +91,13 @@ def main(conversion_type='theo_gearth', excel_file='theo_testfile_single.xlsx'):
         print('Read excel file ...')
         df = pd.read_excel(os.path.join('data', 'excel', excel_file), skiprows=1)
 
+        # fix column header from hobo file output (remove serial num)
+        for i, x in enumerate(df.columns):
+            newstr = x.split(' ')
+            df.columns.values[i] = " ".join(newstr[:2]).strip(',')
+
         # get important data
-        time = df['Datum Zeit, GMT+00:00'].values # DD.MM.YY HH:MM:SS
+        time = df['Datum Zeit'].values # DD.MM.YY HH:MM:SS
         # check if data from excel file uses a , or . as decimal
         if isinstance(df['Windgeschwindigkeit, m/s'].values[0], float):
             v_spd = [v for v in df['Windgeschwindigkeit, m/s'].values] # m/s
@@ -101,9 +106,7 @@ def main(conversion_type='theo_gearth', excel_file='theo_testfile_single.xlsx'):
             T = [t for t in df['Temp., °C'].values] # deg C
             RH = [rh for rh in df['RH, %'].values] # %
             p = [pp for pp in df['Druck, mbar'].values] # hPa
-            print(df['Sonnenstrahlung, W/m²'])
-            print(df['Sonnenstrahlung, W/m²'].values)
-            #sun_rad = [l for l in df['Sonnenstrahlung, W/m²'].values] # W/m2
+            sun_rad = [l for l in df['Sonnenstrahlung, W/m²'].values] # W/m2
         else:
             v_spd = [float(v.replace(',', '.')) for v in df['Windgeschwindigkeit, m/s'].values] # m/s
             v_spd_boeen = [float(vb.replace(',', '.')) for vb in df['Böengeschwindigkeit, m/s'].values] # m/s
