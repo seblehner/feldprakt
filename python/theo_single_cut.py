@@ -62,7 +62,7 @@ def main(station_height=0, csv_file=None, titlestr='theodolite single cut'):
         ax1.set_xlim([np.nanmin(x_cs)-100, np.nanmax(x_cs)+100])
         ax1.set_ylim([np.nanmin(y_cs)-ds/2., np.nanmax(y_cs)+ds/2.])
     elif ds < 0:
-        ax1.set_xlim([np.nanmin(x_cs)-ds/2., np.nanmax(x_cs)+ds/2.])
+        ax1.set_xlim([np.nanmin(x_cs)-np.abs(ds)/2., np.nanmax(x_cs)+np.abs(ds)/2.])
         ax1.set_ylim([np.nanmin(y_cs)-100., np.nanmax(y_cs)+100])
     # ax1.set_aspect(aspect=1) # can be used to reduce the whole box to the corret aspect ratio
     ax1.set_title('horizontal translation (blue cross = starting point)')

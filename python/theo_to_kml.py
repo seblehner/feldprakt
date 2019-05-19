@@ -140,8 +140,8 @@ def main(stat_height=None, stat_lon=None, stat_lat=None, csv_file=None):
 
     # calculate velocity in x, y direction
     translate_velo = data_arr[:,2]
-    ts_x = np.sin(td_rad)*translate_velo
-    ts_y = np.cos(td_rad)*translate_velo
+    ts_x = np.cos(td_rad)*translate_velo
+    ts_y = np.sin(td_rad)*translate_velo
 
     # calculate translation in each direction
     translation_x = ts_x[:-1]*dt
@@ -149,6 +149,9 @@ def main(stat_height=None, stat_lon=None, stat_lat=None, csv_file=None):
 
     earth_radius = 6371e3 # in m
     earth_u = 2*earth_radius*np.pi
+    # convert math/meteo deg
+    td_rad = (450 - td_rad) % 360
+
 
     # source: http://www.geomidpoint.com/destination/calculation.html
     # distance covered in radians

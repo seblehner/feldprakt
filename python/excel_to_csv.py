@@ -54,9 +54,6 @@ def main(conversion_type='theo_gearth', excel_file='theo_testfile_single.xlsx'):
         v_spd = df['WS(m/s) for graph'].values
         height = df['Height(m) for graph'].values
 
-        # convert math deg to meteo deg
-        v_dir = (450 - v_dir) % 360
-
         # create new pandas dataframe
         df_new = pd.DataFrame(np.column_stack([height, v_dir, v_spd]),
                               columns=['height above ground [m]', 'wind direction [deg]',

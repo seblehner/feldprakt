@@ -87,7 +87,7 @@ def main(B=None, phi=None, csv_file1=None, csv_file2=None, titlestr='theodolite 
         ax1.set_xlim([np.nanmin(x_cs)-100, np.nanmax(x_cs)+100])
         ax1.set_ylim([np.nanmin(y_cs)-ds/2., np.nanmax(y_cs)+ds/2.])
     elif ds < 0:
-        ax1.set_xlim([np.nanmin(x_cs)-ds/2., np.nanmax(x_cs)+ds/2.])
+        ax1.set_xlim([np.nanmin(x_cs)-np.abs(ds)/2., np.nanmax(x_cs)+np.abs(ds)/2.])
         ax1.set_ylim([np.nanmin(y_cs)-100., np.nanmax(y_cs)+100])
     # ax1.set_aspect(aspect=1) # can be used to reduce the whole box to the corret aspect ratio
     ax1.set_title('horizontal translation (blue cross = starting point)')

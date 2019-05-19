@@ -26,11 +26,11 @@ workflow_dict = {'pressure_reduction':           0,
                  'excel_to_csv_theo_cut':        0,
                  'excel_to_csv_hobo':            0,
                  'excel_to_csv_syn':             0,
-                 'excel_to_csv_syn_forecast':    1,
+                 'excel_to_csv_syn_forecast':    0,
                  'theo_calc_single_cut':         0,
                  'theo_calc_double_cut':         0,
                  'raso_to_kml':                  0,
-                 'theo_to_kml':                  0,
+                 'theo_to_kml':                  1,
                  'timeseries_plot':              0,
                  'timeseries_compare_plot':      0,
                  'timeseries_syn_plot':          0,
@@ -50,12 +50,12 @@ if workflow_dict['pressure_reduction'] == 1:
 """ Excel to CSV conversion """
 # theodolite for google earth trajectory
 if workflow_dict['excel_to_csv_theo_gearth'] == 1:
-    excel_filename = 'theo_testfile_single.xlsx'
+    excel_filename = 'theo_test_fix.xlsx'
     etcsv.main(conversion_type='theo_gearth', excel_file=excel_filename)
 
 # theodolite for single/double cut calculations
 if workflow_dict['excel_to_csv_theo_cut'] == 1:
-    excel_filename1 = 'theo_testfile_single3.xlsx'
+    excel_filename1 = 'theo_test_fix.xlsx'
     etcsv.main(conversion_type='theo_cut', excel_file=excel_filename1)
     # excel_filename1 = 'theo_testfile_double1.xlsx'
     # etcsv.main(conversion_type='theo_cut', excel_file=excel_filename1)
@@ -87,7 +87,7 @@ if workflow_dict['excel_to_csv_syn_forecast'] == 1:
 if workflow_dict['theo_calc_single_cut'] == 1:
     # input vars
     h = 785
-    csv_file = 'theo_testfile_single3_cut_20190419-0142.csv'
+    csv_file = 'theo_test_fix_cut_20190519-1241.csv'
 
     thsin.main(station_height=h, csv_file=csv_file)
 
@@ -132,9 +132,9 @@ if workflow_dict['raso_to_kml'] == 1:
 # use the csv file for gearth
 if workflow_dict['theo_to_kml'] == 1:
     h = 785
-    lon = 12.30912
-    lat = 47.44752
-    name = 'theo_testfile_single_gearth_20190419-0142.csv'
+    lon = 15.3175
+    lat = 47.5553
+    name = 'theo_test_fix_gearth_20190519-1241.csv'
     theokml.main(stat_height=h, stat_lon=lon, stat_lat=lat, csv_file=name)
 
 
@@ -217,7 +217,7 @@ if workflow_dict['timeseries_syn_plot'] == 1:
 
 # timeseries plot for synoptic forecast
 if workflow_dict['timeseries_syn_forecast_plot'] == 1:
-    csv_filename = 'syn_forecast_template_20190519-0631.csv'
-    figname = 'syn_obs_20190518_15UT'
-    title = 'synoptic observations 19.05.2019'
+    csv_filename = 'syn_forecast_template_20190519-1441.csv'
+    figname = 'syn_forecast_20190519_15UTC'
+    title = 'synoptic forecast 19.05.2019 15 UTC'
     plotrout.main(plotroutine='syn_forecast', csv_filename=csv_filename, figurename=figname, titlestr=title)

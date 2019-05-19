@@ -604,6 +604,11 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         # save figure
         print('Saving figure ...')
         plt.savefig(os.path.join(fig_dir, "".join([figurename, '_cloudbase.png'])))
+
+
+    # synoptic forecast
+    elif plotroutine == 'syn_forecast':
+        print('NYI')
     return None
 
 if __name__ == '__main__':
