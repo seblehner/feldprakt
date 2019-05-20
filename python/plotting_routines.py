@@ -238,10 +238,10 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
 
     if plotroutine == 'hobo_multi':
         # height correction for stations: dp = -g * rho * dz
-        station_heights = {'Campingplatz': 730, # NEEDS TO BE VERIFIED
+        station_heights = {'Campingplatz': 771,
                          'Lanzenkreuz': 791,
                          'Seetal': 842,
-                         'Stübming': 755,  # NEEDS TO BE VERIFIED
+                         'Stübming': 824,
                          'UnterDerLanzen': 733}
         metrs = []
         for num, itm in enumerate(station_heights.items()):
