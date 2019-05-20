@@ -94,7 +94,18 @@ def main(conversion_type='theo_gearth', excel_file='theo_testfile_single.xlsx'):
             df.columns.values[i] = " ".join(newstr[:2]).strip(',')
 
         # get important data
-        time = df['Datum Zeit'].values # DD.MM.YY HH:MM:SS
+        # include time meta for old and new versions
+        if isinstance(df['Datum Zeit'].values[0], str):
+            time_vec = df['Datum Zeit'].values
+        elif isinstance(df['Datum Zeit'].values[0], np.datetime64):
+            time = pd.to_datetime(df['Datum Zeit'].values)
+            new_time_vec = []
+            for i in range(len(time)):
+                new_time = time[i].strftime('%d.%m.%Y %H:%M:%S')
+                new_time_vec.append(new_time)
+            time_vec = np.array(new_time_vec)
+
+        # print(np.array(new_time_vec))
         # check if data from excel file uses a , or . as decimal
         if isinstance(df['Windgeschwindigkeit, m/s'].values[0], float):
             v_spd = [v for v in df['Windgeschwindigkeit, m/s'].values] # m/s
@@ -114,7 +125,7 @@ def main(conversion_type='theo_gearth', excel_file='theo_testfile_single.xlsx'):
             sun_rad = [float(l.replace(',', '.')) for l in df['Sonnenstrahlung, W/m²'].values] # W/m2
 
         # create new pandas dataframe
-        df_new = pd.DataFrame(np.column_stack([time, v_spd, v_spd_boeen, v_dir, T, RH, p, sun_rad]),
+        df_new = pd.DataFrame(np.column_stack([time_vec, v_spd, v_spd_boeen, v_dir, T, RH, p, sun_rad]),
                               columns=['time', 'wind speed [m/s]', 'wind gusts [m/s]', 'wind direction [deg]',
                               'temperature [deg C]', 'relative humidity [%]', 'pressure [hPa]', 'radiation [W/m2]'])
 

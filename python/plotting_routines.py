@@ -21,7 +21,7 @@ import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 import sys
 
-def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, titlestr=None, flag=None):
+def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, titlestr=None, flag=None, timebegin=None, timeend=None, timemarker=None):
     # define some methods
     register_matplotlib_converters()
     def set_visuals(ax, pl, spine_location):
@@ -50,9 +50,9 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         ax.xaxis.set_major_formatter(h_fmt)
         return None
 
-    def set_time_axis_compare(ax, time):
+    def set_time_axis_compare(ax, time, hour_interval=1):
         ax.set_xlabel('time UTC')
-        hours = mdates.HourLocator(interval=1)
+        hours = mdates.HourLocator(interval=hour_interval)
         ax.set_xlim([time[0], time[-1]])
         h_fmt = mdates.DateFormatter('%d.%m.%y - %H:%M')
         fig.autofmt_xdate(rotation=45)
@@ -237,13 +237,27 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         plt.savefig(os.path.join(fig_dir, figurename))
 
     if plotroutine == 'hobo_multi':
+        # height correction for stations: dp = -g * rho * dz
+        station_heights = {'Campingplatz': 730, # NEEDS TO BE VERIFIED
+                         'Lanzenkreuz': 791,
+                         'Seetal': 842,
+                         'Stübming': 755,  # NEEDS TO BE VERIFIED
+                         'UnterDerLanzen': 733}
+        metrs = []
+        for num, itm in enumerate(station_heights.items()):
+            metrs.append(itm[1])
+        avg_height = np.mean(metrs)
+
         # read into dataframe from csv file
         id = []
         dflist = []
+        dplist = []
         for index, item in enumerate(csv_filename.items()):
-            #print(item[1])
+            height_corr = station_heights[item[0]] - avg_height
+            dp = -9.81*1.1*height_corr
             id.append(item[0])
             dflist.append(pd.read_csv(os.path.join('data', 'csv', item[1]), index_col=0, sep=','))
+            dplist.append(dp)
 
         def get_time_vec(df):
             timestr = df['time']
@@ -258,7 +272,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         for i, flags in enumerate(flag.items()):
             if flags[0] == 'wind_gusts':
                 if flags[1]:
-                    fig, (ax, ax2, ax3) = plt.subplots(nrows=3, sharex=True, figsize=(14, 9))
+                    fig, (ax, ax2, ax3) = plt.subplots(nrows=3, sharex=True, figsize=(13, 8))
                     switch = 1
                 else:
                     fig, (ax, ax2) = plt.subplots(nrows=2, sharex=True, figsize=(12, 7))
@@ -280,6 +294,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
                 y = df['wind gusts [m/s]']
                 ax3.plot(time, y, '--', color=colr)
                 ax3.set_ylabel('wind gusts [m/s]')
+                ax3.grid(True)
 
             y = df['wind direction [deg]']
             ax2.plot(time, y, '*', color=colr)
@@ -297,8 +312,11 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         # set time/x-axis and legend
         set_time_axis_compare(ax, time)
         labels = [pl.get_label() for pl in pls]
+        plt.xlabel('time [UTC]')
         fig.legend(pls, labels, loc='upper center', ncol=len(labels))
+
         ax.grid(True)
+        ax2.grid(True)
 
         # save figure
         print('Saving figure ...')
@@ -310,11 +328,11 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
 
 
         # create figure
-        # 1) wind gusts, wind speed, wind direction comparison
+        # 2) Temperature, RH, pressure
         for i, flags in enumerate(flag.items()):
             if flags[0] == 'pressure':
                 if flags[1]:
-                    fig, (ax, ax2, ax3) = plt.subplots(nrows=3, sharex=True, figsize=(14, 9))
+                    fig, (ax, ax2, ax3) = plt.subplots(nrows=3, sharex=True, figsize=(13, 8))
                     switch = 1
                 else:
                     fig, (ax, ax2) = plt.subplots(nrows=2, sharex=True, figsize=(12, 7))
@@ -338,8 +356,12 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
 
             if switch == 1:
                 y = df['pressure [hPa]']
+                dp = dplist[ind]
+                # station height, density and gravitational acceleration need to be verified
+                #ax3.plot(time, y-dp/100, '-.', color=colr)
                 ax3.plot(time, y, '-.', color=colr)
                 ax3.set_ylabel('pressure [hPa]')
+                ax3.grid(True)
 
         # set title
         if not titlestr:
@@ -352,6 +374,8 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         labels = [pl.get_label() for pl in pls]
         fig.legend(pls, labels, loc='upper center', ncol=len(labels))
         ax.grid(True)
+        ax2.grid(True)
+        plt.xlabel('time [UTC]')
 
         # save figure
         print('Saving figure ...')
@@ -608,7 +632,96 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
 
     # synoptic forecast
     elif plotroutine == 'syn_forecast':
-        print('NYI')
+        df = pd.read_csv(os.path.join('data', 'csv', csv_filename), sep=',')
+        timestr = df['UTC'].values
+        time = [datetime.strptime(tt[:-4], '%Y-%m-%d %H:%M:%S') for tt in timestr]
+        T_fcst = df['T_forecast'].values
+        Td_fcst = df['Td_forecast'].values
+        vs_fcst = df['wind_speed_forecast'].values
+        vd_fcst = df['wind_direction_forecast'].values
+
+        fig, ax = plt.subplots(nrows=4, ncols=2, sharex='col', figsize=(12, 15))
+
+        ax[0,0].plot(time, T_fcst, 'b')
+        ax[0,0].set_ylabel('temperature [°C]')
+        ax[0,0].set_title('temperature forecast')
+
+        ax[1,0].plot(time, Td_fcst, 'b--')
+        ax[1,0].set_ylabel('dew-point temperature [°C]')
+        ax[1,0].set_title('dew-point temperature forecast')
+
+        ax[2,0].plot(time, vs_fcst, 'b')
+        ax[2,0].set_ylabel('wind speed [m/s]')
+        ax[2,0].set_title('wind speed forecast')
+
+        ax[3,0].plot(time, vd_fcst, 'b*')
+        ax[3,0].set_ylabel('wind direction')
+        ax[3,0].set_title('wind direction forecast')
+        ax[3,0].set_ylim([0, 360])
+        ax[3,0].set_yticks(np.arange(0,361,45))
+        ax[3,0].set_yticklabels(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'])
+
+        plt.suptitle('forecast 19.05.2019 15 UTC (blue)\n validation (red)', fontsize=20)
+
+        cl_fcst = df['cloudiness_forecast'].values
+        clb_fcst = df['cloud_base_forecast'].values
+        ra_fcst = df['rain_amount_forecast'].values
+        rp_fcst = df['rain_probability_forecast'].values
+
+        #fig, (ax1, ax2, ax3, ax4) = plt.subplots(nrows=4, sharex=True, figsize=(12, 15))
+
+        ax[0,1].plot(time, cl_fcst, 'b')
+        ax[0,1].set_ylabel('cloudiness')
+        ax[0,1].set_title('cloudiness forecast')
+        ax[0,1].set_ylim([-0.3, 8.3])
+
+        ax[1,1].plot(time, clb_fcst, 'b')
+        ax[1,1].set_ylabel('cloud base [m]')
+        ax[1,1].set_title('cloud base forecast')
+
+        ax[2,1].plot(time, ra_fcst, 'b')
+        ax[2,1].set_ylabel('amount of rain [mm/h]')
+        ax[2,1].set_title('rain amount forecast')
+
+        ax[3,1].plot(time, rp_fcst, 'b')
+        ax[3,1].set_ylabel('probability of rain')
+        ax[3,1].set_title('rain probability forecast')
+        ax[3,1].set_ylim([0, 100])
+
+        for axit in ax.ravel():
+            axit.grid(True)
+
+        # validation
+        T_vali = df['T_validation'].values
+        Td_vali = df['Td_validation'].values
+        vs_vali = df['wind_speed_validation'].values
+        vd_vali = df['wind_direction_validation'].values
+        cl_vali = df['cloudiness_validation'].values
+        clb_vali = df['cloud_base_validation'].values
+        ra_vali = df['rain_amount_validation'].values
+        rp_vali = df['rain_probability_validation'].values
+
+        ax[0,0].plot(time, T_vali, 'r')
+        ax[1,0].plot(time, Td_vali, 'r--')
+        ax[2,0].plot(time, vs_vali, 'r')
+        ax[3,0].plot(time, vd_vali, 'r*')
+        ax[0,1].plot(time, cl_vali, 'r')
+        ax[1,1].plot(time, clb_vali, 'r')
+        ax[2,1].plot(time, ra_vali, 'r')
+        ax[3,1].plot(time, rp_vali, 'r')
+
+        if timebegin is not None:
+            time = pd.date_range(datetime.strptime(timebegin, '%Y%m%d%H'), end=datetime.strptime(timeend, '%Y%m%d%H'), freq='H')
+
+        if timemarker is not None:
+            timemark = datetime.strptime(timemarker, '%Y%m%d%H')
+            for axit in ax.reshape(-1):
+                axit.axvline(x=timemark, color='k', linestyle='--')
+
+        set_time_axis_compare(ax[3,0], time, hour_interval=3)
+        set_time_axis_compare(ax[3,1], time, hour_interval=3)
+        print('Saving figure ...')
+        plt.savefig(os.path.join(fig_dir, "".join([figurename, '_new.png'])))
     return None
 
 if __name__ == '__main__':
