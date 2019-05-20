@@ -134,6 +134,39 @@ def main(conversion_type='theo_gearth', excel_file='theo_testfile_single.xlsx'):
         csv_filename = "".join([excel_file.split('.')[0], '_', datestr, '.csv'])
         save_as_csv(df_new, csv_filename)
 
+    elif conversion_type == 'hobo_precip':
+        # read excel file with pandas
+        print('Read excel file ...')
+        df = pd.read_excel(os.path.join('data', 'excel', excel_file), skiprows=1)
+
+        # fix column header from hobo file output (remove serial num)
+        for i, x in enumerate(df.columns):
+            newstr = x.split(' ')
+            df.columns.values[i] = " ".join(newstr[:2]).strip(',')
+
+        # get important data
+        # include time meta for old and new versions
+        if isinstance(df['Datum Zeit'].values[0], str):
+            time_vec = df['Datum Zeit'].values
+        elif isinstance(df['Datum Zeit'].values[0], np.datetime64):
+            time = pd.to_datetime(df['Datum Zeit'].values)
+            new_time_vec = []
+            for i in range(len(time)):
+                new_time = time[i].strftime('%d.%m.%Y %H:%M:%S')
+                new_time_vec.append(new_time)
+            time_vec = np.array(new_time_vec)
+
+        precip_ticks = df['Event, units'].values
+
+        # create new pandas dataframe
+        df_new = pd.DataFrame(np.column_stack([time_vec, precip_ticks]),
+                              columns=['time', 'precip ticks [0.2mm]'])
+
+
+        # save dateframe as csv file
+        print('Saving data to csv file ...')
+        csv_filename = "".join([excel_file.split('.')[0], '_', datestr, '.csv'])
+        save_as_csv(df_new, csv_filename)
 
     elif conversion_type == 'syn':
         # read excel file with pandas

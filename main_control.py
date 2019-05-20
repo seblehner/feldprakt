@@ -25,6 +25,7 @@ workflow_dict = {'pressure_reduction':           0,
                  'excel_to_csv_theo_gearth':     0,
                  'excel_to_csv_theo_cut':        0,
                  'excel_to_csv_hobo':            0,
+                 'excel_to_csv_hobo_precip':     0,
                  'excel_to_csv_syn':             0,
                  'excel_to_csv_syn_forecast':    0,
                  'theo_calc_single_cut':         0,
@@ -33,6 +34,7 @@ workflow_dict = {'pressure_reduction':           0,
                  'theo_to_kml':                  0,
                  'timeseries_plot':              0,
                  'timeseries_compare_plot':      0,
+                 'timeseries_precip_plot':       0,
                  'timeseries_syn_plot':          0,
                  'timeseries_syn_forecast_plot': 1}
 
@@ -62,7 +64,7 @@ if workflow_dict['excel_to_csv_theo_cut'] == 1:
     # excel_filename2 = 'theo_testfile_double2.xlsx'
     # etcsv.main(conversion_type='theo_cut', excel_file=excel_filename2)
 
-# hobo weather station (XLS file)
+# hobo weather station
 if workflow_dict['excel_to_csv_hobo'] == 1:
     # excel_filename = 'hobo_testfile.xls'
     # excel_filename = '114414020190519.xlsx'
@@ -71,7 +73,16 @@ if workflow_dict['excel_to_csv_hobo'] == 1:
     # excel_filename = 'Lanzen_20190519.xlsx'
     excel_filename = 'unterderlanzen20190519.xlsx'
     etcsv.main(conversion_type='hobo', excel_file=excel_filename)
-    sys.exit()
+
+# hobo weather station precipitation
+if workflow_dict['excel_to_csv_hobo_precip'] == 1:
+    excel_filename = 'Testfile_HOBO_NS.xls'
+    # excel_filename = '114414020190519.xlsx'
+    # excel_filename = '114417120190519.xlsx'
+    # excel_filename = 'Campingplattz20190519.xlsx'
+    # excel_filename = 'Lanzen_20190519.xlsx'
+    # excel_filename = 'unterderlanzen20190519.xlsx'
+    etcsv.main(conversion_type='hobo_precip', excel_file=excel_filename)
 
 # synoptic observations
 if workflow_dict['excel_to_csv_syn'] == 1:
@@ -80,7 +91,7 @@ if workflow_dict['excel_to_csv_syn'] == 1:
 
 # synoptic forecast
 if workflow_dict['excel_to_csv_syn_forecast'] == 1:
-    excel_filename = 'syn_forecast_20190519.xlsx'
+    excel_filename = 'syn_forecast_20190520_08UTC.xlsx'
     etcsv.main(conversion_type='syn', excel_file=excel_filename)
 
 """ Theodolite cuts calculations """
@@ -206,6 +217,16 @@ if workflow_dict['timeseries_compare_plot'] == 1:
     figname = 'hobo_compare_'
     plotrout.main(plotroutine='hobo_multi', csv_filename=csv_filenames, figurename=figname, flag=flag)
 
+# timeseries plot for hobo precipitation
+if workflow_dict['timeseries_precip_plot'] == 1:
+    csv_filenames = 'Testfile_HOBO_NS_20190520-0852.csv'
+    figname = 'hobo_precip_'
+    timebegin = '2018102409'
+    timeend = '2018102516'
+    timemarker = '2019051915'
+    plotrout.main(plotroutine='hobo_precip', csv_filename=csv_filenames, figurename=figname, timebegin=timebegin, timeend=timeend, hour_interval=3, time_freq='3H')
+
+
 
 
 # timeseries plot for synoptic observations (such as cloudiness)
@@ -218,10 +239,10 @@ if workflow_dict['timeseries_syn_plot'] == 1:
 
 # timeseries plot for synoptic forecast
 if workflow_dict['timeseries_syn_forecast_plot'] == 1:
-    csv_filename = 'syn_forecast_20190519_20190520-0655.csv'
-    figname = 'syn_forecast_20190519_15UTC'
-    title = 'synoptic forecast 19.05.2019 15 UTC'
-    timebegin = '2019051908'
-    timeend = '2019052016'
-    timemarker = '2019051915'
+    csv_filename = 'syn_forecast_20190520_08UTC_20190520-0956.csv'
+    figname = 'syn_forecast_20190520_08UTC'
+    title = 'synoptic forecast 20.05.2019 08 UTC'
+    timebegin = '2019052008'
+    timeend = '2019052108'
+    timemarker = '2019052008'
     plotrout.main(plotroutine='syn_forecast', csv_filename=csv_filename, figurename=figname, titlestr=title, timebegin=timebegin, timeend=timeend, timemarker=timemarker)

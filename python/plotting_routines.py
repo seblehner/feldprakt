@@ -21,7 +21,7 @@ import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 import sys
 
-def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, titlestr=None, flag=None, timebegin=None, timeend=None, timemarker=None):
+def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, titlestr=None, flag=None, timebegin=None, timeend=None, timemarker=None, hour_interval=3, time_freq='D'):
     # define some methods
     register_matplotlib_converters()
     def set_visuals(ax, pl, spine_location):
@@ -386,6 +386,59 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         plt.savefig(os.path.join(fig_dir, "".join([figurename, savename])))
 
 
+    elif plotroutine == 'hobo_precip':
+        # read into dataframe from csv file
+        df = pd.read_csv(os.path.join('data', 'csv', csv_filename), index_col=0, sep=',')
+        timestr = df['time']
+        if len(timestr[0]) > 18:
+            time = [datetime.strptime(tt, '%d.%m.%Y %H:%M:%S') for tt in timestr]
+        else:
+            time = [datetime.strptime(tt, '%d.%m.%y %H:%M:%S') for tt in timestr]
+
+        # accumulated ticks
+        precip_ticks = df['precip ticks [0.2mm]']
+        precip_num = [np.float(str(ti).split(',')[0].replace(' ', '')) for ti in precip_ticks.values]
+
+        # diff and transform in precipitation mm
+        precip_amount = np.diff(precip_num)*0.2
+
+        new_pd_ticks = pd.Series(data=precip_ticks, index=time)
+        new_pd_series = pd.Series(data=precip_amount, index=time[:-1])
+        precip_hourly = new_pd_series.resample('H', label='right', closed='right').sum()
+        precip_3hourly = new_pd_series.resample('3H', label='right', closed='right').sum()
+
+        # create figure
+        width_hourly = np.min(np.diff(mdates.date2num(precip_hourly.index)))
+        width_3hourly = np.min(np.diff(mdates.date2num(precip_3hourly.index)))
+        #ax.bar(x_values, y_values, width=width, ec="k")
+
+        fig, (ax, ax2, ax3) = plt.subplots(nrows=3, figsize=(12, 9))
+        ax.grid(True)
+        ax2.grid(True)
+        ax3.grid(True)
+        ax.plot(time, precip_num)
+        ax.set_title('precipitation ticks')
+        ax.set_ylabel('precipitation ticks [0.2 mm]')
+        ax2.bar(precip_hourly.index, precip_hourly, width=-width_hourly*0.9, align='edge')
+        ax2.set_title('hourly precipitation')
+        ax2.set_ylabel('hourly precipitation [mm/h]')
+        ax3.bar(precip_3hourly.index, precip_3hourly, width=-width_3hourly*0.9, align='edge')
+        ax3.set_title('3-hourly precipitation')
+        ax3.set_ylabel('3-hourly precipitation [mm/3h]')
+
+        if timebegin is not None:
+            time = pd.date_range(datetime.strptime(timebegin, '%Y%m%d%H'), end=datetime.strptime(timeend, '%Y%m%d%H'), freq=time_freq)
+
+
+        #ax.set_xlim([time[0], time[1]])
+        set_time_axis_compare(ax, time, hour_interval=hour_interval)
+        set_time_axis_compare(ax2, time, hour_interval=1)
+        set_time_axis_compare(ax3, time, hour_interval=3)
+
+        plt.suptitle('observed precipitation', fontsize=20)
+        # save figure
+        print('Saving figure ...')
+        plt.savefig(os.path.join(fig_dir, "".join([figurename, 'new.png'])))
 
     # synoptic observations
     elif plotroutine == 'syn':
@@ -605,7 +658,6 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         print('Saving figure ...')
         plt.savefig(os.path.join(fig_dir, "".join([figurename, '.png'])))
 
-
         ## barplot height of cloud base
         # approximation: spread * 125
         cb_assmann = (T_assmann - TD_assmann) * 125
@@ -634,11 +686,14 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
     elif plotroutine == 'syn_forecast':
         df = pd.read_csv(os.path.join('data', 'csv', csv_filename), sep=',')
         timestr = df['UTC'].values
-        time = [datetime.strptime(tt[:-4], '%Y-%m-%d %H:%M:%S') for tt in timestr]
-        T_fcst = df['T_forecast'].values
-        Td_fcst = df['Td_forecast'].values
-        vs_fcst = df['wind_speed_forecast'].values
-        vd_fcst = df['wind_direction_forecast'].values
+        try:
+            time = [datetime.strptime(tt, '%Y-%m-%d %H:%M:%S') for tt in timestr]
+        except:
+            time = [datetime.strptime(tt[:-4], '%Y-%m-%d %H:%M:%S') for tt in timestr]
+        T_fcst = df['T_forecast [°C]'].values
+        Td_fcst = df['Td_forecast [°C]'].values
+        vs_fcst = df['wind_speed_forecast [m/s]'].values
+        vd_fcst = df['wind_direction_forecast [m/s]'].values
 
         fig, ax = plt.subplots(nrows=4, ncols=2, sharex='col', figsize=(12, 15))
 
@@ -664,9 +719,9 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         plt.suptitle('forecast 19.05.2019 15 UTC (blue)\n validation (red)', fontsize=20)
 
         cl_fcst = df['cloudiness_forecast'].values
-        clb_fcst = df['cloud_base_forecast'].values
-        ra_fcst = df['rain_amount_forecast'].values
-        rp_fcst = df['rain_probability_forecast'].values
+        clb_fcst = df['cloud_base_forecast [m]'].values
+        ra_fcst = df['rain_amount_forecast [mm/h]'].values
+        rp_fcst = df['rain_probability_forecast [%]'].values
 
         #fig, (ax1, ax2, ax3, ax4) = plt.subplots(nrows=4, sharex=True, figsize=(12, 15))
 
@@ -692,13 +747,13 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
             axit.grid(True)
 
         # validation
-        T_vali = df['T_validation'].values
-        Td_vali = df['Td_validation'].values
-        vs_vali = df['wind_speed_validation'].values
-        vd_vali = df['wind_direction_validation'].values
+        T_vali = df['T_validation [°C]'].values
+        Td_vali = df['Td_validation [°C]'].values
+        vs_vali = df['wind_speed_validation [m/s]'].values
+        vd_vali = df['wind_direction_validation [m/s]'].values
         cl_vali = df['cloudiness_validation'].values
-        clb_vali = df['cloud_base_validation'].values
-        ra_vali = df['rain_amount_validation'].values
+        clb_vali = df['cloud_base_validation [m]'].values
+        ra_vali = df['rain_amount_validation [mm/h]'].values
         rp_vali = df['rain_probability_validation'].values
 
         ax[0,0].plot(time, T_vali, 'r')
