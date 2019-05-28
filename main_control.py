@@ -35,8 +35,8 @@ workflow_dict = {'pressure_reduction':           0,
                  'timeseries_plot':              0,
                  'timeseries_compare_plot':      0,
                  'timeseries_precip_plot':       0,
-                 'timeseries_syn_plot':          0,
-                 'timeseries_syn_forecast_plot': 1}
+                 'timeseries_syn_plot':          1,
+                 'timeseries_syn_forecast_plot': 0}
 
 
 """ pressure reduction to mean sea level """
@@ -86,12 +86,12 @@ if workflow_dict['excel_to_csv_hobo_precip'] == 1:
 
 # synoptic observations
 if workflow_dict['excel_to_csv_syn'] == 1:
-    excel_filename = 'syn_obs_gruppe1_tag2.xlsx'
+    excel_filename = 'syn_obs_tag1_Gr3.xlsx'
     etcsv.main(conversion_type='syn', excel_file=excel_filename)
 
 # synoptic forecast
 if workflow_dict['excel_to_csv_syn_forecast'] == 1:
-    excel_filename = 'syn_forecast_20190520_08UTC.xlsx'
+    excel_filename = 'syn_forecast_gruppe3.xlsx'
     etcsv.main(conversion_type='syn', excel_file=excel_filename)
 
 """ Theodolite cuts calculations """
@@ -154,7 +154,7 @@ if workflow_dict['theo_to_kml'] == 1:
 # timeseries plot for various parameters
 if workflow_dict['timeseries_plot'] == 1:
     # creates a single windowed timeseries plot for specified vars
-    csv_filename = 'hobo_testfile_20190419-0142.csv'
+    csv_filename = 'Seetal20190518_20190519-0904.csv'
 
     ## a few example calls
     # vars which shall be plotted => set to 1
@@ -231,18 +231,18 @@ if workflow_dict['timeseries_precip_plot'] == 1:
 
 # timeseries plot for synoptic observations (such as cloudiness)
 if workflow_dict['timeseries_syn_plot'] == 1:
-    csv_filename = 'syn_obs_gruppe1_tag2_20190519-0631.csv'
+    csv_filename = 'syn_obs_tag1_Gr3_20190523-1825.csv'
     figname = 'syn_obs_20190518_15UTC'
-    title = 'synoptic observations 19.05.2019'
+    title = 'synoptic observations 18.05.2019'
     plotrout.main(plotroutine='syn', csv_filename=csv_filename, figurename=figname, titlestr=title)
 
 
 # timeseries plot for synoptic forecast
 if workflow_dict['timeseries_syn_forecast_plot'] == 1:
-    csv_filename = 'syn_forecast_20190520_08UTC_20190520-0956.csv'
-    figname = 'syn_forecast_20190520_08UTC'
-    title = 'synoptic forecast 20.05.2019 08 UTC'
-    timebegin = '2019052008'
-    timeend = '2019052108'
-    timemarker = '2019052008'
+    csv_filename = 'syn_forecast_gruppe3_20190523-1719.csv'
+    figname = 'syn_forecast_20190520_15UTC'
+    title = 'synoptic forecast 20.05.2019 15 UTC'
+    timebegin = '2019052015'
+    timeend = '2019052116'
+    timemarker = '2019052116'
     plotrout.main(plotroutine='syn_forecast', csv_filename=csv_filename, figurename=figname, titlestr=title, timebegin=timebegin, timeend=timeend, timemarker=timemarker)

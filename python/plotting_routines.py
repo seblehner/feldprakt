@@ -690,10 +690,14 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
             time = [datetime.strptime(tt, '%Y-%m-%d %H:%M:%S') for tt in timestr]
         except:
             time = [datetime.strptime(tt[:-4], '%Y-%m-%d %H:%M:%S') for tt in timestr]
-        T_fcst = df['T_forecast [°C]'].values
-        Td_fcst = df['Td_forecast [°C]'].values
-        vs_fcst = df['wind_speed_forecast [m/s]'].values
-        vd_fcst = df['wind_direction_forecast [m/s]'].values
+        # T_fcst = df['T_forecast [°C]'].values
+        # Td_fcst = df['Td_forecast [°C]'].values
+        # vs_fcst = df['wind_speed_forecast [m/s]'].values
+        # vd_fcst = df['wind_direction_forecast [m/s]'].values
+        T_fcst = df['T_forecast'].values
+        Td_fcst = df['Td_forecast'].values
+        vs_fcst = df['wind_speed_forecast'].values
+        vd_fcst = df['wind_direction_forecast'].values
 
         fig, ax = plt.subplots(nrows=4, ncols=2, sharex='col', figsize=(12, 15))
 
@@ -716,12 +720,17 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         ax[3,0].set_yticks(np.arange(0,361,45))
         ax[3,0].set_yticklabels(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'])
 
-        plt.suptitle('forecast 19.05.2019 15 UTC (blue)\n validation (red)', fontsize=20)
+        plt.suptitle('forecast 20.05.2019 15 UTC (blue)\n validation (red)', fontsize=20)
 
         cl_fcst = df['cloudiness_forecast'].values
-        clb_fcst = df['cloud_base_forecast [m]'].values
-        ra_fcst = df['rain_amount_forecast [mm/h]'].values
-        rp_fcst = df['rain_probability_forecast [%]'].values
+        # clb_fcst = df['cloud_base_forecast [m]'].values
+        # ra_fcst = df['rain_amount_forecast [mm/h]'].values
+        # rp_fcst = df['rain_probability_forecast [%]'].values
+        # cl_fcst = df['cloudiness_forecast'].values
+        clb_fcst = pd.to_numeric(df['cloud_base_forecast'].values)
+        ra_fcst = df['rain_amount_forecast'].values
+        rp_fcst = df['rain_probability_forecast'].values
+
 
         #fig, (ax1, ax2, ax3, ax4) = plt.subplots(nrows=4, sharex=True, figsize=(12, 15))
 
@@ -747,13 +756,21 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
             axit.grid(True)
 
         # validation
-        T_vali = df['T_validation [°C]'].values
-        Td_vali = df['Td_validation [°C]'].values
-        vs_vali = df['wind_speed_validation [m/s]'].values
-        vd_vali = df['wind_direction_validation [m/s]'].values
+        # T_vali = df['T_validation [°C]'].values
+        # Td_vali = df['Td_validation [°C]'].values
+        # vs_vali = df['wind_speed_validation [m/s]'].values
+        # vd_vali = df['wind_direction_validation [m/s]'].values
+        # cl_vali = df['cloudiness_validation'].values
+        # clb_vali = df['cloud_base_validation [m]'].values
+        # ra_vali = df['rain_amount_validation [mm/h]'].values
+        # rp_vali = df['rain_probability_validation'].values
+        T_vali = df['T_validation'].values
+        Td_vali = df['Td_validation'].values
+        vs_vali = df['wind_speed_validation'].values
+        vd_vali = df['wind_direction_validation'].values
         cl_vali = df['cloudiness_validation'].values
-        clb_vali = df['cloud_base_validation [m]'].values
-        ra_vali = df['rain_amount_validation [mm/h]'].values
+        clb_vali = df['cloud_base_validation'].values
+        ra_vali = df['rain_amount_validation'].values
         rp_vali = df['rain_probability_validation'].values
 
         ax[0,0].plot(time, T_vali, 'r')
