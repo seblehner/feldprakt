@@ -4,7 +4,7 @@
 # @Author: SebiMac
 # @Date:   2019-03-18 15:15:17 +0100
 # @Last modified by:   SebiMac
-# @Last modified time: 2019-04-19 01:50:08 +0200
+# @Last modified time: 2019-06-01 00:55:15 +0200
 
 """
 Calculates horizontal translation and converts to lat/lon.
@@ -102,31 +102,31 @@ def write_kml_file(name, data):
         f.write('</kml>\n')
     return None
 
-def main(stat_height=None, stat_lon=None, stat_lat=None, csv_file=None):
+def main(stat_height=None, stat_lon=None, stat_lat=None, excel_file=None):
     """
-    Calculate horizontal translation from a theodolite measurement given as csv file,
+    Calculate horizontal translation from a theodolite measurement given as excel_file file,
     convert to lat/lon vals.
     """
     print('Executing theo_to_kml.py ...')
-    # read cds file into dataframe
-    csv_path = os.path.join('data', 'csv', csv_file)
-    df = pd.read_csv(csv_path, delimiter=',', index_col=0)
+    # read excel file into dataframe
+    df = pd.read_excel(os.path.join('data', 'excel', excel_file),
+                       skiprows=4, sheet_name='Data')
+
+    # get important data
+    v_dir = np.array(df['WD(deg) for graph'].values, dtype=float) # mathematical degree
+    v_spd = np.array(df['WS(m/s) for graph'].values, dtype=float)
+    height = np.array(df['Height(m) for graph'].values, dtype=float)
 
     # get name
-    namestr = csv_file.split('.')[0]
-
-    # convert pandas dataframe to numpy array
-    data_arr = np.array(df)
-    if data_arr.size == 0:
-        raise ValueError('Could not find available data, check csvfile!')
+    namestr = excel_file.split('.')[0]
 
     # estimate time between each data point
     vert_velo = 2.4 # estimate of vertical velocity (needed because there is no such data available)
-    dt = np.diff(data_arr[:,0])/vert_velo
+    dt = np.diff(height)/vert_velo
 
     # define new arrays for new lon, lat positions
-    lons = np.zeros(data_arr[:,0].shape)
-    lats = np.zeros(data_arr[:,0].shape)
+    lons = np.zeros(height.shape)
+    lats = np.zeros(height.shape)
 
     # initial positon
     lons[0] = float(stat_lon)*np.pi/180
@@ -135,14 +135,12 @@ def main(stat_height=None, stat_lon=None, stat_lat=None, csv_file=None):
     ## calculate new lons, lats
     print('Calculate trajectory ...')
     # transform degrees to radians and flip by pi (because wind vector degree show from where the wind is coming)
-    translate_direction = data_arr[:,1]
-    td_rad = translate_direction*np.pi/180
+    td_rad = v_dir*np.pi/180
     # transform geographical to meteo degrees
 
     # calculate velocity in x, y direction
-    translate_velo = data_arr[:,2]
-    ts_x = np.sin(td_rad)*translate_velo
-    ts_y = np.cos(td_rad)*translate_velo
+    ts_x = np.sin(td_rad)*v_spd
+    ts_y = np.cos(td_rad)*v_spd
 
     # calculate translation in each direction
     translation_x = ts_x[:-1]*dt
@@ -163,8 +161,8 @@ def main(stat_height=None, stat_lon=None, stat_lat=None, csv_file=None):
     lats = lats*180/np.pi
 
     # add station height to data
-    height = data_arr[:,0] + stat_height
-    data_mat = np.array([lons, lats, height])
+    height_asl = height + stat_height
+    data_mat = np.array([lons, lats, height_asl])
 
     # write kml file
     write_kml_file(namestr, data_mat)

@@ -1,7 +1,0 @@
-name: feldprakt
-dependencies:
-  - python=3
-  - numpy
-  - pandas
-  - matplotlib
-  - xlrd

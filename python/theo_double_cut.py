@@ -4,7 +4,7 @@
 # @Author: SebiMac
 # @Date:   2019-03-21 12:51:44 +0100
 # @Last modified by:   SebiMac
-# @Last modified time: 2019-04-19 01:22:38 +0200
+# @Last modified time: 2019-06-01 00:44:32 +0200
 
 """
 Calculation and plot of a theodolite double cut profile.
@@ -17,24 +17,23 @@ import pandas as pd
 import sys
 import matplotlib.pyplot as plt
 
-def main(B=None, phi=None, csv_file1=None, csv_file2=None, titlestr='theodolite double cut'):
+def main(B=None, phi=None, excel_file1=None, excel_file2=None, titlestr='theodolite example double cut'):
     dt = 10
 
-    # read data into a dataframe and transform to np array
-    df1 = pd.read_csv(os.path.join('data', 'csv', csv_file1), delimiter=',', index_col=0)
-    data_arr1 = np.array(df1)
-    df2 = pd.read_csv(os.path.join('data', 'csv', csv_file2), delimiter=',', index_col=0)
-    data_arr2 = np.array(df2)
+    # read data from excel file 1
+    df1 = pd.read_excel(os.path.join('data', 'excel', excel_file1),
+                       usecols=[3, 4], sheet_name='Data')
+    df2 = pd.read_excel(os.path.join('data', 'excel', excel_file2),
+                       usecols=[3, 4], sheet_name='Data')
 
-    # extract data
-    elevation1 = data_arr1[:,0]
-    azimuth1 = data_arr1[:,1]
-    elevation2 = data_arr2[:,0]
-    azimuth2 = data_arr2[:,1]
+    # get important data
+    elevation1 = np.array(df1['Unnamed: 3'].values[4:], dtype=float)
+    azimuth1 = np.array(df1['Unnamed: 4'].values[4:], dtype=float)
+    elevation2 = np.array(df2['Unnamed: 3'].values[4:], dtype=float)
+    azimuth2 = np.array(df2['Unnamed: 4'].values[4:], dtype=float)
 
+    # equalise length and convert to radian
     min_length = np.min([len(elevation1), len(elevation2)])
-
-    # convert to radian
     ele1 = elevation1[:min_length]*np.pi/180
     azi1 = azimuth1[:min_length]*np.pi/180
     ele2 = elevation2[:min_length]*np.pi/180
@@ -120,7 +119,7 @@ def main(B=None, phi=None, csv_file1=None, csv_file2=None, titlestr='theodolite 
 
     # save figure
     print('Saving figure ...')
-    plt.savefig(os.path.join(fig_dir, "".join([csv_file1.split('.')[0], '.png'])))
+    plt.savefig(os.path.join(fig_dir, "".join([excel_file1.split('.')[0], '_double_cut.png'])))
     return None
 
 
@@ -131,4 +130,4 @@ if __name__ == '__main__':
     data2 = sys.argv[4]
     tstr = sys.argv[5]
 
-    main(B=B, phi=phi, csv_file1=data1, csv_file2=data2, titlestr=tstr)
+    main(B=B, phi=phi, excel_file1=data1, excel_file2=data2, titlestr=tstr)

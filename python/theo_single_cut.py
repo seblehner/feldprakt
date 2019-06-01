@@ -4,7 +4,7 @@
 # @Author: SebiMac
 # @Date:   2019-03-21 12:51:44 +0100
 # @Last modified by:   SebiMac
-# @Last modified time: 2019-04-18 21:31:28 +0200
+# @Last modified time: 2019-06-01 00:43:07 +0200
 
 """
 Calculation and plot of a theodolite single cut profile.
@@ -17,17 +17,17 @@ import pandas as pd
 import sys
 import matplotlib.pyplot as plt
 
-def main(station_height=0, csv_file=None, titlestr='theodolite single cut'):
+def main(excel_file=None, titlestr='theodolite example single cut'):
     dt = 10
     vert_velo = 2.4 # assumption based on the volume/filling of the baloon
 
-    # read data into a dataframe and transform to np array
-    df = pd.read_csv(os.path.join('data', 'csv', csv_file), delimiter=',', index_col=0)
-    data_arr = np.array(df)
+    # read data from excel file
+    df = pd.read_excel(os.path.join('data', 'excel', excel_file),
+                       usecols=[3, 4], sheet_name='Data')
 
-    # extract data
-    elevation = data_arr[:,0]
-    azimuth = data_arr[:,1]
+    # get important data
+    elevation = np.array(df['Unnamed: 3'].values[4:], dtype=float)
+    azimuth = np.array(df['Unnamed: 4'].values[4:], dtype=float)
 
     # calculate vectors
     z = np.arange(0, len(elevation))*dt*vert_velo
@@ -95,12 +95,10 @@ def main(station_height=0, csv_file=None, titlestr='theodolite single cut'):
 
     # save figure
     print('Saving figure ...')
-    plt.savefig(os.path.join(fig_dir, "".join([csv_file.split('.')[0], '.png'])))
+    plt.savefig(os.path.join(fig_dir, "".join([excel_file.split('.')[0], '_single_cut.png'])))
     return None
 
 
 if __name__ == '__main__':
-    h = sys.argv[2]
-    data = sys.argv[2]
-
-    main(station_height=h, csv_file=data)
+    data = sys.argv[1]
+    main(excel_file=data)

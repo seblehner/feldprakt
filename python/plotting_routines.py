@@ -4,7 +4,7 @@
 # @Author: SebiMac
 # @Date:   2019-04-05 23:19:06 +0200
 # @Last modified by:   SebiMac
-# @Last modified time: 2019-04-19 03:15:31 +0200
+# @Last modified time: 2019-06-01 02:54:20 +0200
 """
 Plotting routines for time series data from csv files.
 """
@@ -21,7 +21,7 @@ import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 import sys
 
-def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, titlestr=None, flag=None, timebegin=None, timeend=None, timemarker=None, hour_interval=3, time_freq='D'):
+def main(plotroutine=None, excel_filename=None, var_dict=None, figurename=None, titlestr=None, flag=None, timebegin=None, timeend=None, timemarker=None, hour_interval=3, time_freq='D'):
     # define some methods
     register_matplotlib_converters()
     def set_visuals(ax, pl, spine_location):
@@ -32,10 +32,10 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         ax.spines[spine_location].set_linewidth(2)
         return None
 
-    def set_time_axis(ax, time, withDate=True):
+    def set_time_axis(ax, time, withDate=True, hour_interval=2):
         # set labelling, lim and some visuals for the time/x-axis
         ax.set_xlabel('time UTC')
-        hours = mdates.HourLocator(interval=1)
+        hours = mdates.HourLocator(interval=hour_interval)
         if withDate:
             ax.set_xlim([time[0], time[-1]])
             ax.spines['top'].set_linewidth(2)
@@ -50,7 +50,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         ax.xaxis.set_major_formatter(h_fmt)
         return None
 
-    def set_time_axis_compare(ax, time, hour_interval=1):
+    def set_time_axis_compare(ax, time, hour_interval=2):
         ax.set_xlabel('time UTC')
         hours = mdates.HourLocator(interval=hour_interval)
         ax.set_xlim([time[0], time[-1]])
@@ -69,14 +69,55 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
             raise
 
     # timeseries from hobo csv file
-    if plotroutine == 'hobo':
-        # read into dataframe from csv file
-        df = pd.read_csv(os.path.join('data', 'csv', csv_filename), index_col=0, sep=',')
-        timestr = df['time']
-        if len(timestr[0]) > 18:
-            time = [datetime.strptime(tt, '%d.%m.%Y %H:%M:%S') for tt in timestr]
+    if plotroutine == 'hobo_single':
+        df = pd.read_excel(os.path.join('data', 'excel', excel_filename), skiprows=1)
+
+        # fix column header from hobo file output (remove serial num)
+        for i, x in enumerate(df.columns):
+            newstr = x.split(' ')
+            df.columns.values[i] = " ".join(newstr[:2]).strip(',')
+
+        # get important data
+        # include time meta for old and new versions
+        if isinstance(df['Datum Zeit'].values[0], str):
+            time_vec = df['Datum Zeit'].values
+        elif isinstance(df['Datum Zeit'].values[0], np.datetime64):
+            time = pd.to_datetime(df['Datum Zeit'].values)
+            new_time_vec = []
+            for i in range(len(time)):
+                new_time = time[i].strftime('%d.%m.%Y %H:%M:%S')
+                new_time_vec.append(new_time)
+            time_vec = np.array(new_time_vec)
+
+        # check if data from excel file uses a , or . as decimal
+        if isinstance(df['Windgeschwindigkeit, m/s'].values[0], float):
+            v_spd = np.array([v for v in df['Windgeschwindigkeit, m/s'].values], dtype=float) # m/s
+            v_spd_boeen = np.array([vb for vb in df['Böengeschwindigkeit, m/s'].values], dtype=float) # m/s
+            v_dir = np.array([vd for vd in df['Windrichtung, ø'].values], dtype=float) # deg
+            T = np.array([t for t in df['Temp., °C'].values], dtype=float) # deg C
+            RH = np.array([rh for rh in df['RH, %'].values], dtype=float) # %
+            p = np.array([pp for pp in df['Druck, mbar'].values], dtype=float) # hPa
+            try:
+                sun_rad = np.array([l for l in df['Sonnenstrahlung, W/m²'].values], dtype=float) # W/m2
+            except:
+                pass
         else:
-            time = [datetime.strptime(tt, '%d.%m.%y %H:%M:%S') for tt in timestr]
+            v_spd = np.array([float(v.replace(',', '.')) for v in df['Windgeschwindigkeit, m/s'].values], dtype=float) # m/s
+            v_spd_boeen = np.array([float(vb.replace(',', '.')) for vb in df['Böengeschwindigkeit, m/s'].values], dtype=float) # m/s
+            v_dir = np.array([float(vd.replace(',', '.')) for vd in df['Windrichtung, ø'].values], dtype=float) # deg
+            T = np.array([float(t.replace(',', '.')) for t in df['Temp., °C'].values], dtype=float) # deg C
+            RH = np.array([float(rh.replace(',', '.')) for rh in df['RH, %'].values], dtype=float) # %
+            p = np.array([float(pp.replace(',', '.')) for pp in df['Druck, mbar'].values], dtype=float) # hPa
+            try:
+                sun_rad = np.array([float(l.replace(',', '.')) for l in df['Sonnenstrahlung, W/m²'].values], dtype=float) # W/m2
+            except:
+                pass
+
+        # read into dataframe from csv file
+        if len(time_vec[0]) > 18:
+            time = [datetime.strptime(tt, '%d.%m.%Y %H:%M:%S') for tt in time_vec]
+        else:
+            time = [datetime.strptime(tt, '%d.%m.%y %H:%M:%S') for tt in time_vec]
 
         # create figure
         fig, ax = plt.subplots(figsize=(12, 6))
@@ -88,7 +129,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         for index, item in enumerate(var_dict.items()):
             if item[1]:
                 if item[0] == 'wind_spd':
-                    y = df['wind speed [m/s]']
+                    y = v_spd
 
                     # plotting
                     p1, = ax.plot(time, y, 'cyan', label='wind speed')
@@ -97,7 +138,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
                     pls.append(p1)
 
                 elif item[0] == 'wind_gusts':
-                    y = df['wind gusts [m/s]']
+                    y = v_spd_boeen
 
                     # plotting
                     p2, = ax.plot(time, y, 'magenta', label='wind gusts')
@@ -105,7 +146,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
                     pls.append(p2)
 
                 elif item[0] == 'wind_dir':
-                    y = df['wind direction [deg]']
+                    y = v_dir
 
                     # plotting
                     p3, = axr1.plot(time, y, 'k*', label='wind direction')
@@ -117,7 +158,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
                     pls.append(p3)
 
                 elif item[0] == 'temp':
-                    y = df['temperature [deg C]']
+                    y = T
 
                     # plotting
                     if axr1.lines:
@@ -135,7 +176,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
                     pls.append(p4)
 
                 elif item[0] == 'rel_hum':
-                    y = df['relative humidity [%]']
+                    y = RH
 
                     # plotting
                     if axr1.lines:
@@ -166,7 +207,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
                     pls.append(p5)
 
                 elif item[0] == 'pres':
-                    y = df['pressure [hPa]']
+                    y = p
 
                     # plotting
                     if ax.lines:
@@ -189,7 +230,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
                     pls.append(p6)
 
                 elif item[0] == 'radiation':
-                    y = df['radiation [W/m2]']
+                    y = sun_rad
 
                     # plotting
                     if ax.lines:
@@ -227,7 +268,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         else:
             plt.title(titlestr)
         # set time/x-axis and legend
-        set_time_axis(ax, time, withDate=False)
+        set_time_axis(ax, time, withDate=True)
         labels = [pl.get_label() for pl in pls]
         fig.legend(pls, labels, loc='upper center', ncol=len(labels))
         ax.grid(True)
@@ -252,19 +293,35 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         id = []
         dflist = []
         dplist = []
-        for index, item in enumerate(csv_filename.items()):
+        for index, item in enumerate(excel_filename.items()):
             height_corr = station_heights[item[0]] - avg_height
             dp = -9.81*1.1*height_corr
             id.append(item[0])
-            dflist.append(pd.read_csv(os.path.join('data', 'csv', item[1]), index_col=0, sep=','))
+            df = pd.read_excel(os.path.join('data', 'excel', item[1]), skiprows=1)
+            # fix column header from hobo file output (remove serial num)
+            for i, x in enumerate(df.columns):
+                newstr = x.split(' ')
+                df.columns.values[i] = " ".join(newstr[:2]).strip(',')
+
+            dflist.append(df)
             dplist.append(dp)
 
         def get_time_vec(df):
-            timestr = df['time']
-            if len(timestr[0]) > 18:
-                time = [datetime.strptime(tt, '%d.%m.%Y %H:%M:%S') for tt in timestr]
+            # include time meta for old and new versions
+            if isinstance(df['Datum Zeit'].values[0], str):
+                time_vec = df['Datum Zeit'].values
+            elif isinstance(df['Datum Zeit'].values[0], np.datetime64):
+                time = pd.to_datetime(df['Datum Zeit'].values)
+                new_time_vec = []
+                for i in range(len(time)):
+                    new_time = time[i].strftime('%d.%m.%Y %H:%M:%S')
+                    new_time_vec.append(new_time)
+                time_vec = np.array(new_time_vec)
+
+            if len(time_vec[0]) > 18:
+                time = [datetime.strptime(tt, '%d.%m.%Y %H:%M:%S') for tt in time_vec]
             else:
-                time = [datetime.strptime(tt, '%d.%m.%y %H:%M:%S') for tt in timestr]
+                time = [datetime.strptime(tt, '%d.%m.%y %H:%M:%S') for tt in time_vec]
             return time
 
         # create figure
@@ -284,19 +341,31 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
             colr = colrs[ind]
             lab = id[ind]
             time = get_time_vec(df)
-            y = df['wind speed [m/s]']
+            if isinstance(df['Windgeschwindigkeit, m/s'].values[0], float):
+                v_spd = [v for v in df['Windgeschwindigkeit, m/s'].values] # m/s
+            else:
+                v_spd = [float(v.replace(',', '.')) for v in df['Windgeschwindigkeit, m/s'].values] # m/s
+            y = v_spd
             p, = ax.plot(time, y, color=colr, label=lab)
             ax.set_ylabel('wind speed [m/s]')
             pls.append(p)
 
 
             if switch == 1:
-                y = df['wind gusts [m/s]']
+                if isinstance(df['Böengeschwindigkeit, m/s'].values[0], float):
+                    v_spd_boeen = [vb for vb in df['Böengeschwindigkeit, m/s'].values] # m/s
+                else:
+                    v_spd_boeen = [float(vb.replace(',', '.')) for vb in df['Böengeschwindigkeit, m/s'].values] # m/s
+                y = v_spd_boeen
                 ax3.plot(time, y, '--', color=colr)
                 ax3.set_ylabel('wind gusts [m/s]')
                 ax3.grid(True)
 
-            y = df['wind direction [deg]']
+            if isinstance(df['Windrichtung, ø'].values[0], float):
+                v_dir = [vd for vd in df['Windrichtung, ø'].values] # deg
+            else:
+                v_dir = [float(vd.replace(',', '.')) for vd in df['Windrichtung, ø'].values] # deg
+            y = v_dir
             ax2.plot(time, y, '*', color=colr)
             ax2.set_ylabel('wind direction [°]')
             ax2.set_ylim([0, 360])
@@ -344,20 +413,34 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
             colr = colrs[ind]
             lab = id[ind]
             time = get_time_vec(df)
-            y = df['temperature [deg C]']
+
+            if isinstance(df['Temp., °C'].values[0], float):
+                T = [t for t in df['Temp., °C'].values] # deg C
+            else:
+                T = [float(t.replace(',', '.')) for t in df['Temp., °C'].values] # deg C
+            y = T
             p, = ax.plot(time, y, color=colr, label=lab)
             ax.set_ylabel('temperature [°C]')
             pls.append(p)
 
-            y = df['relative humidity [%]']
+            if isinstance(df['RH, %'].values[0], float):
+                RH = [rh for rh in df['RH, %'].values] # %
+            else:
+                RH = [float(rh.replace(',', '.')) for rh in df['RH, %'].values] # %
+            y = RH
             ax2.plot(time, y, '--', color=colr)
             ax2.set_ylabel('relative humidity [%]')
             ax2.set_ylim([35, 100])
 
             if switch == 1:
-                y = df['pressure [hPa]']
+                if isinstance(df['Druck, mbar'].values[0], float):
+                    p = [pp for pp in df['Druck, mbar'].values] # hPa
+                else:
+                    p = [float(pp.replace(',', '.')) for pp in df['Druck, mbar'].values] # hPa
+                y = p
                 dp = dplist[ind]
                 # station height, density and gravitational acceleration need to be verified
+                # and calculated with higher precision before applying the correction succesfully
                 #ax3.plot(time, y-dp/100, '-.', color=colr)
                 ax3.plot(time, y, '-.', color=colr)
                 ax3.set_ylabel('pressure [hPa]')
@@ -387,17 +470,34 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
 
 
     elif plotroutine == 'hobo_precip':
-        # read into dataframe from csv file
-        df = pd.read_csv(os.path.join('data', 'csv', csv_filename), index_col=0, sep=',')
-        timestr = df['time']
-        if len(timestr[0]) > 18:
-            time = [datetime.strptime(tt, '%d.%m.%Y %H:%M:%S') for tt in timestr]
+        # read into dataframe from excel file
+        df = pd.read_excel(os.path.join('data', 'excel', excel_filename), skiprows=1)
+
+        # fix column header from hobo file output (remove serial num)
+        for i, x in enumerate(df.columns):
+            newstr = x.split(' ')
+            df.columns.values[i] = " ".join(newstr[:2]).strip(',')
+
+        # get important data
+        # include time meta for old and new versions
+        if isinstance(df['Datum Zeit'].values[0], str):
+            time_vec = df['Datum Zeit'].values
+        elif isinstance(df['Datum Zeit'].values[0], np.datetime64):
+            time = pd.to_datetime(df['Datum Zeit'].values)
+            new_time_vec = []
+            for i in range(len(time)):
+                new_time = time[i].strftime('%d.%m.%Y %H:%M:%S')
+                new_time_vec.append(new_time)
+            time_vec = np.array(new_time_vec)
+
+        if len(time_vec[0]) > 18:
+            time = [datetime.strptime(tt, '%d.%m.%Y %H:%M:%S') for tt in time_vec]
         else:
-            time = [datetime.strptime(tt, '%d.%m.%y %H:%M:%S') for tt in timestr]
+            time = [datetime.strptime(tt, '%d.%m.%y %H:%M:%S') for tt in time_vec]
 
         # accumulated ticks
-        precip_ticks = df['precip ticks [0.2mm]']
-        precip_num = [np.float(str(ti).split(',')[0].replace(' ', '')) for ti in precip_ticks.values]
+        precip_ticks = precip_ticks = df['Event, units'].values
+        precip_num = [np.float(str(ti).split(',')[0].replace(' ', '')) for ti in precip_ticks]
 
         # diff and transform in precipitation mm
         precip_amount = np.diff(precip_num)*0.2
@@ -435,20 +535,26 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         set_time_axis_compare(ax2, time, hour_interval=1)
         set_time_axis_compare(ax3, time, hour_interval=3)
 
-        plt.suptitle('observed precipitation', fontsize=20)
+        # set title
+        if not titlestr:
+            plt.suptitle('observed precipitation', fontsize=20)
+        else:
+            plt.suptitle(titlestr, fontsize=20)
+
         # save figure
         print('Saving figure ...')
-        plt.savefig(os.path.join(fig_dir, "".join([figurename, 'new.png'])))
+        plt.savefig(os.path.join(fig_dir, "".join([figurename, 'precip.png'])))
 
     # synoptic observations
-    elif plotroutine == 'syn':
+    elif plotroutine == 'syn_observation':
         # read into dataframe from csv file
-        df = pd.read_csv(os.path.join('data', 'csv', csv_filename), sep=',')
+        df = pd.read_excel(os.path.join('data', 'excel', excel_filename))
 
         ## get important data
         # time
         timestr = df['UTC'].values
-        time = [datetime.strptime(tt, '%H:%M:%S') for tt in timestr]
+        timestr_iter = [str(tt1) for tt1 in timestr]
+        time = [datetime.strptime(tt, '%H:%M:%S') for tt in timestr_iter]
 
         # assmann
         T_assmann = df['T_assmann'].values
@@ -547,7 +653,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         # plot synoptic observations
         # height (y) and time (x) axis
         z = np.arange(0, 8001, 10)
-        set_time_axis(ax2, time, withDate=False)
+        set_time_axis(ax2, time, withDate=False, hour_interval=1)
         timeticks = ax2.get_xticks()
 
         # difference between ticks on x-axis; used for positioning and horizontal scaling
@@ -652,7 +758,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         axr2.tick_params(axis='y', colors='y')
         ax2.set_ylabel('height above ground [m]')
         ax2.set_xlabel('time UTC')
-        set_time_axis(ax2, time, withDate=False)
+        set_time_axis(ax2, time, withDate=False, hour_interval=1)
 
         # save figure
         print('Saving figure ...')
@@ -672,7 +778,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         ax.bar(timeticks, cb_davis, width=dx/3, color='b', align='center', label='davis')
         ax.bar(timeticks+dx/6*2, cb_kestrel, width=dx/3, color='g', align='center', label='kestrel')
         ax.bar(timeticks+dx/6*4, cb_davisstation, width=dx/3, color='purple', align='center', label='davis-station')
-        set_time_axis(ax, time, withDate=False)
+        set_time_axis(ax, time, withDate=False, hour_interval=1)
         plt.title('Cloud base height')
         ax.set_ylabel('height [m]')
         plt.legend(loc=2)
@@ -684,12 +790,14 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
 
     # synoptic forecast
     elif plotroutine == 'syn_forecast':
-        df = pd.read_csv(os.path.join('data', 'csv', csv_filename), sep=',')
+        df = pd.read_excel(os.path.join('data', 'excel', excel_filename))
+
+        ## get important data
+        # time
         timestr = df['UTC'].values
-        try:
-            time = [datetime.strptime(tt, '%Y-%m-%d %H:%M:%S') for tt in timestr]
-        except:
-            time = [datetime.strptime(tt[:-4], '%Y-%m-%d %H:%M:%S') for tt in timestr]
+        timestr_iter = [str(tt1) for tt1 in timestr]
+        time = [datetime.strptime(tt.split('.')[0], '%Y-%m-%dT%H:%M:%S') for tt in timestr_iter]
+
         # T_fcst = df['T_forecast [°C]'].values
         # Td_fcst = df['Td_forecast [°C]'].values
         # vs_fcst = df['wind_speed_forecast [m/s]'].values
@@ -705,7 +813,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         ax[0,0].set_ylabel('temperature [°C]')
         ax[0,0].set_title('temperature forecast')
 
-        ax[1,0].plot(time, Td_fcst, 'b--')
+        ax[1,0].plot(time, Td_fcst, 'b-')
         ax[1,0].set_ylabel('dew-point temperature [°C]')
         ax[1,0].set_title('dew-point temperature forecast')
 
@@ -720,7 +828,10 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         ax[3,0].set_yticks(np.arange(0,361,45))
         ax[3,0].set_yticklabels(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'])
 
-        plt.suptitle('forecast 20.05.2019 15 UTC (blue)\n validation (red)', fontsize=20)
+        if not titlestr:
+            plt.suptitle('synoptic forecast and validation example\n forecast: blue - validation: red', fontsize=20)
+        else:
+            plt.suptitle("".join([titlestr, '\n forecast: blue - validation: red']), fontsize=20)
 
         cl_fcst = df['cloudiness_forecast'].values
         # clb_fcst = df['cloud_base_forecast [m]'].values
@@ -774,7 +885,7 @@ def main(plotroutine=None, csv_filename=None, var_dict=None, figurename=None, ti
         rp_vali = df['rain_probability_validation'].values
 
         ax[0,0].plot(time, T_vali, 'r')
-        ax[1,0].plot(time, Td_vali, 'r--')
+        ax[1,0].plot(time, Td_vali, 'r-')
         ax[2,0].plot(time, vs_vali, 'r')
         ax[3,0].plot(time, vd_vali, 'r*')
         ax[0,1].plot(time, cl_vali, 'r')

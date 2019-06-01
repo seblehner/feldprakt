@@ -4,7 +4,7 @@
 # @Author: SebiMac
 # @Date:   2019-03-18 15:15:17 +0100
 # @Last modified by:   SebiMac
-# @Last modified time: 2019-04-17 12:16:16 +0200
+# @Last modified time: 2019-05-31 23:52:34 +0200
 
 """
 Downloads radio sounding data from the University of Wyoming: http://weather.uwyo.edu/upperair/sounding.html
@@ -274,5 +274,4 @@ if __name__ == '__main__':
         date = sys.argv[3]
         main(station_name=station, hour=hour, date=date)
     except:
-        pass
-    main(station_name=station, hour=hour)
+        main(station_name=station, hour=hour)
