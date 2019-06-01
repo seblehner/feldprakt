@@ -27,15 +27,6 @@ inside the
 ```
 folder for a one-step installation of all dependencies. When installed, a new environment named **feldprakt** is created, remember to activate the environment before executing any files.
 
-If the use of a jupyter notebook is envisaged, make sure to install jupyter:
-```sh
-conda install jupyter
-```
-and start it with (environment has to be activated beforehand!):
-```sh
-jupyter-notebook
-```
-
 
 ### Structure
 
